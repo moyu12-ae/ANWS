@@ -3,14 +3,14 @@
 
 const { parseArgs } = require('node:util');
 const path = require('node:path');
-const { error, info } = require('../lib/output');
+const { error, info, logo } = require('../lib/output');
 
 // ─── 版本号从 package.json 读取 ─────────────────────────────────────────────
 const { version } = require(path.join(__dirname, '..', 'package.json'));
 
 // ─── 帮助文本 ─────────────────────────────────────────────────────────────────
 const HELP = `
-anws v${version} — Antigravity Workflow System CLI
+  v${version} — Antigravity Workflow System
 
 USAGE
   anws <command> [options]
@@ -47,6 +47,7 @@ async function main() {
   }
 
   if (values.help || positionals.length === 0) {
+    logo();
     process.stdout.write(HELP);
     process.exit(0);
   }

@@ -57,4 +57,18 @@ function blank() {
   console.log('');
 }
 
-module.exports = { success, warn, error, info, fileLine, blank, c };
+/** 打印 ASCII Logo */
+function logo() {
+  const art = `
+    ___    _   ___      _______
+   /   |  / | / / | /| / / ___/
+  / /| | /  |/ /| |/ |/ /\\__ \\ 
+ / ___ |/ /|  / |  /|  /___/ / 
+/_/  |_/_/ |_/  |__/|__//____/ 
+  `;
+  const cyan = useColor ? '\x1b[36m' : '';
+  const reset = useColor ? '\x1b[0m' : '';
+  console.log(`${cyan}${art}${reset}`);
+}
+
+module.exports = { success, warn, error, info, fileLine, blank, logo, c };

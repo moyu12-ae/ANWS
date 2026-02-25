@@ -4,7 +4,7 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const { copyDir } = require('./copy');
 const { MANAGED_FILES } = require('./manifest');
-const { success, warn, info, fileLine, blank } = require('./output');
+const { success, warn, info, fileLine, blank, logo } = require('./output');
 
 /**
  * anws init — 将工作流系统写入当前项目
@@ -30,7 +30,7 @@ async function init() {
   }
   // ── 无冲突:直接复制 ─────────────────────────────────────────────────────────
 
-  blank();
+  logo();
   info('Initializing Antigravity Workflow System...');
   blank();
 

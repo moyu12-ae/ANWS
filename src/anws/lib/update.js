@@ -3,7 +3,7 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const { MANAGED_FILES } = require('./manifest');
-const { success, warn, error, info, fileLine, blank } = require('./output');
+const { success, warn, error, info, fileLine, blank, logo } = require('./output');
 
 /**
  * anws update — 将当前项目的托管文件更新到最新版本
@@ -15,6 +15,7 @@ async function update() {
   // 检查 .agent/ 是否存在
   const agentExists = await fs.access(agentDir).then(() => true).catch(() => false);
   if (!agentExists) {
+    logo();
     error('No .agent/ found in current directory.');
     info('Run `anws init` first to set up the workflow system.');
     process.exit(1);
@@ -28,6 +29,7 @@ async function update() {
     process.exit(0);
   }
 
+  logo();
   // 仅覆盖托管文件
   const srcRoot = path.join(__dirname, '..', 'templates', '.agent');
   const updated = [];
