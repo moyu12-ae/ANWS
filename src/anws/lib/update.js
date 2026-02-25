@@ -2,8 +2,8 @@
 
 const fs = require('node:fs/promises');
 const path = require('node:path');
-const { MANAGED_FILES } = require('./manifest');
-const { success, warn, error, info, fileLine, blank, logo } = require('./output');
+const { MANAGED_FILES, USER_PROTECTED_FILES } = require('./manifest');
+const { success, warn, error, info, fileLine, skippedLine, blank, logo } = require('./output');
 
 /**
  * anws update — 将当前项目的托管文件更新到最新版本
@@ -30,12 +30,18 @@ async function update() {
   }
 
   logo();
-  // 仅覆盖托管文件
+  // 仅覆盖托管文件；USER_PROTECTED_FILES 永远跳过
   const srcRoot = path.join(__dirname, '..', 'templates', '.agent');
   const updated = [];
+  const skipped = [];
 
   for (const rel of MANAGED_FILES) {
-    const srcPath = path.join(path.dirname(srcRoot), rel); // templates/.agent/...
+    if (USER_PROTECTED_FILES.includes(rel)) {
+      skipped.push(rel);
+      continue;
+    }
+
+    const srcPath = path.join(path.dirname(srcRoot), rel);
     const destPath = path.join(cwd, rel);
 
     const srcExists = await fs.access(srcPath).then(() => true).catch(() => false);
@@ -53,8 +59,15 @@ async function update() {
   for (const rel of updated) {
     fileLine(rel.replace(/\\/g, '/'));
   }
+  if (skipped.length > 0) {
+    blank();
+    info('Skipped (project-specific, preserved):');
+    for (const rel of skipped) {
+      skippedLine(rel.replace(/\\/g, '/'));
+    }
+  }
   blank();
-  success(`Done! ${updated.length} file(s) updated.`);
+  success(`Done! ${updated.length} file(s) updated${skipped.length > 0 ? `, ${skipped.length} skipped` : ''}.`);
   info('Managed files have been updated to the latest version.');
   info('Your custom files in .agent/ were not touched.');
 }

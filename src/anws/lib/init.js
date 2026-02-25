@@ -3,8 +3,8 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const { copyDir } = require('./copy');
-const { MANAGED_FILES } = require('./manifest');
-const { success, warn, info, fileLine, blank, logo } = require('./output');
+const { MANAGED_FILES, USER_PROTECTED_FILES } = require('./manifest');
+const { success, warn, info, fileLine, skippedLine, blank, logo } = require('./output');
 
 /**
  * anws init — 将工作流系统写入当前项目
@@ -24,8 +24,8 @@ async function init() {
       process.exit(0);
     }
     // 仅覆盖托管文件（用户自有文件不受影响）
-    await overwriteManaged(srcRoot, cwd);
-    printSummary(conflicting, cwd, 'updated');
+    const { written: updated, skipped } = await overwriteManaged(srcRoot, cwd);
+    printSummary(updated, skipped, 'updated');
     return;
   }
   // ── 无冲突:直接复制 ─────────────────────────────────────────────────────────
@@ -91,30 +91,46 @@ async function askOverwrite(count) {
 
 /**
  * 仅覆盖 MANAGED_FILES 清单内的文件，用户自有文件不受影响。
+ * USER_PROTECTED_FILES 中的文件即便冲突也跳过，保留用户修改。
+ * @returns {{ written: string[], skipped: string[] }}
  */
 async function overwriteManaged(srcRoot, cwd) {
-  // srcRoot 是 templates/.agent/
   const srcBase = path.dirname(srcRoot); // templates/
+  const written = [];
+  const skipped = [];
+
   for (const rel of MANAGED_FILES) {
-    // rel 格式: '.agent/skills/...'
+    // 受保护文件：文件已存在时跳过，交给用户自行维护
+    if (USER_PROTECTED_FILES.includes(rel)) {
+      const destPath = path.join(cwd, rel);
+      const exists = await fs.access(destPath).then(() => true).catch(() => false);
+      if (exists) {
+        skipped.push(rel);
+        continue;
+      }
+    }
+
     const srcPath = path.join(srcBase, rel);
     const destPath = path.join(cwd, rel);
 
-    // 确保目标目录存在
     await fs.mkdir(path.dirname(destPath), { recursive: true });
-
-    // 只复制 templates 中存在的文件（安全检查）
     const srcExists = await fs.access(srcPath).then(() => true).catch(() => false);
     if (srcExists) {
       await fs.copyFile(srcPath, destPath);
+      written.push(rel);
     }
   }
+
+  return { written, skipped };
 }
 
 /**
  * 打印操作摘要（更新场景）。
+ * @param {string[]} files  已写入的文件
+ * @param {string[]} skipped 受保护跳过的文件
+ * @param {string}  action
  */
-function printSummary(files, cwd, action) {
+function printSummary(files, skipped = [], action) {
   const verb = action === 'updated' ? 'Updating' : 'Writing';
   blank();
   info(`${verb} files...`);
@@ -122,8 +138,15 @@ function printSummary(files, cwd, action) {
   for (const rel of files) {
     fileLine(rel.replace(/\\/g, '/'));
   }
+  if (skipped.length > 0) {
+    blank();
+    info('Skipped (project-specific, preserved):');
+    for (const rel of skipped) {
+      skippedLine(rel.replace(/\\/g, '/'));
+    }
+  }
   blank();
-  success(`Done! ${files.length} file(s) ${action}.`);
+  success(`Done! ${files.length} file(s) ${action}${skipped.length > 0 ? `, ${skipped.length} skipped` : ''}.`);
   if (action === 'updated') {
     info('Managed files have been updated to the latest version.');
   }

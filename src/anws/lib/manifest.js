@@ -4,14 +4,6 @@
  * MANAGED_FILES — anws 托管文件清单
  *
  * 此数组列出 anws 包负责管理的所有文件路径（相对于目标项目根目录）。
- *
- * 冲突检测规则：
- * - 仅当目标项目中存在此清单内的文件时，才触发覆盖确认
- * - 清单之外的用户文件，在任何情况下均不会被触碰
- *
- * 维护规则（重要）：
- * - 每次向 templates/.agent/ 新增文件时，必须同步更新此数组
- * - 文件路径格式：'.agent/relative/path'（Unix 风格斜杠）
  */
 const MANAGED_FILES = [
   '.agent/rules/agents.md',
@@ -47,7 +39,20 @@ const MANAGED_FILES = [
   '.agent/workflows/explore.md',
   '.agent/workflows/forge.md',
   '.agent/workflows/genesis.md',
-  '.agent/workflows/scout.md',
+  '.agent/workflows/scout.md'
 ];
 
-module.exports = { MANAGED_FILES };
+/**
+ * USER_PROTECTED_FILES — 用户保护文件
+ *
+ * 这些文件在项目初始化后通常会包含特定于项目的配置。
+ * anws update 默认会跳过这些文件。
+ */
+const USER_PROTECTED_FILES = [
+  '.agent/rules/agents.md'
+];
+
+module.exports = {
+  MANAGED_FILES,
+  USER_PROTECTED_FILES
+};

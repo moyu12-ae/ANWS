@@ -52,6 +52,11 @@ function fileLine(relativePath) {
   console.log(`  ${c.dim}${relativePath}${c.reset}`);
 }
 
+/** 跳过行（黄色 dim，带 ~ 前缀表示未修改）*/
+function skippedLine(relativePath) {
+  console.log(`  ${c.yellow}~ ${relativePath}${c.reset}${c.dim} (skipped)${c.reset}`);
+}
+
 /** 空行 */
 function blank() {
   console.log('');
@@ -71,4 +76,4 @@ function logo() {
   console.log(`${cyan}${art}${reset}`);
 }
 
-module.exports = { success, warn, error, info, fileLine, blank, logo, c };
+module.exports = { success, warn, error, info, fileLine, skippedLine, blank, logo, c };
