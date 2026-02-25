@@ -42,7 +42,7 @@ graph TD
 
 ### Phase 1: Foundation (基础设施)
 
-- [ ] **T1.1.1** [REQ-001]: 初始化 npm 包结构
+- [x] **T1.1.1** [REQ-001]: 初始化 npm 包结构
   - **描述**: 在 `src/anws/` 下创建完整的 npm 包骨架，包括 `package.json` (含 bin 字段和 engines 约束)、`.npmignore`、目录结构
   - **输入**: ADR_001_TECH_STACK.md 中的技术决策
   - **输出**: `src/anws/package.json`, `src/anws/.npmignore`, `src/anws/bin/`, `src/anws/lib/`, `src/anws/templates/` 目录结构
@@ -59,7 +59,7 @@ graph TD
 
 ### Phase 2: Core (核心功能)
 
-- [ ] **T1.2.1** [REQ-001]: 实现 CLI 主入口 `bin/cli.js`
+- [x] **T1.2.1** [REQ-001]: 实现 CLI 主入口 `bin/cli.js`
   - **描述**: 实现 shebang 行、`parseArgs` 参数解析、`--version` / `--help` 输出、子命令路由 (`init` / `update`)。CommonJS 格式。
   - **输入**: T1.1.1 (包结构)
   - **输出**: `src/anws/bin/cli.js`
@@ -75,7 +75,7 @@ graph TD
   - **依赖**: T1.1.1
   - **优先级**: P0
 
-- [ ] **T1.2.5** [REQ-002]: 实现递归文件复制工具 `lib/copy.js`
+- [x] **T1.2.5** [REQ-002]: 实现递归文件复制工具 `lib/copy.js`
   - **描述**: 封装 `fs.cp` (Node 16.7+ 递归复制) 或手写递归复制逻辑，返回已复制的文件路径数组（供打印摘要用）。
   - **输入**: T1.1.1 (包结构)
   - **输出**: `src/anws/lib/copy.js`，导出 `copyDir(src, dest)` 函数
@@ -89,7 +89,7 @@ graph TD
   - **依赖**: T1.1.1
   - **优先级**: P0
 
-- [ ] **T1.2.2** [REQ-002]: 实现 `anws init` 核心逻辑 `lib/init.js` (无冲突路径)
+- [x] **T1.2.2** [REQ-002]: 实现 `anws init` 核心逻辑 `lib/init.js` (无冲突路径)
   - **描述**: 实现当目标目录中**不存在**任何托管文件时，直接将 `templates/.agent/` 写入 `cwd/.agent/` 的完整流程。包含文件写入成功后的摘要输出和 Next Steps 提示。
   - **输入**: T1.2.5 (copy.js), `src/anws/templates/.agent/` (T2.1.1 完成后存在)
   - **输出**: `src/anws/lib/init.js`
@@ -104,7 +104,7 @@ graph TD
   - **依赖**: T1.2.1, T1.2.5
   - **优先级**: P0
 
-- [ ] **T1.2.3** [REQ-003]: 实现冲突检测与交互确认逻辑
+- [x] **T1.2.3** [REQ-003]: 实现冲突检测与交互确认逻辑
   - **描述**: 在 `init.js` 中补充冲突检测分支：遍历 `MANAGED_FILES` 清单，若发现**已存在的文件**，通过 `readline` 询问用户 Y/N（默认 N）。用户确认后仅覆盖托管文件，拒绝后 abort 不修改任何文件。
   - **输入**: T1.2.2 (init.js), T2.1.2 (manifest.js)
   - **输出**: 更新 `src/anws/lib/init.js`，完整的冲突处理逻辑
@@ -119,7 +119,7 @@ graph TD
   - **依赖**: T1.2.2, T2.1.2
   - **优先级**: P0
 
-- [ ] **T1.2.4** [REQ-004]: 实现 `anws update` 命令 `lib/update.js`
+- [x] **T1.2.4** [REQ-004]: 实现 `anws update` 命令 `lib/update.js`
   - **描述**: `update` 与 `init` 的冲突路径逻辑相似，但跳过"首次无冲突"分支。若 `.agent/` 不存在则报错提示运行 init；若存在则直接询问确认后覆盖托管文件。
   - **输入**: T1.2.3 (冲突逻辑), T2.1.2 (manifest.js)
   - **输出**: `src/anws/lib/update.js`
@@ -137,7 +137,7 @@ graph TD
 
 ### Phase 3: Polish (优化)
 
-- [ ] **T1.3.1**: 完善终端输出格式
+- [x] **T1.3.1**: 完善终端输出格式
   - **描述**: 统一所有命令的输出风格：使用 `✔` / `⚠` / `✖` Unicode 前缀，用 ANSI 转义码加颜色（绿/黄/红），不引入第三方库。非 TTY 环境自动降级为无颜色输出。
   - **输入**: T1.2.2, T1.2.3, T1.2.4 (所有命令实现完成)
   - **输出**: 更新各命令输出逻辑；可提取公共 `lib/output.js` 模块
@@ -151,7 +151,7 @@ graph TD
   - **依赖**: T1.2.2, T1.2.3, T1.2.4
   - **优先级**: P1
 
-- [ ] **T1.3.2** [REQ-001, REQ-005]: 跨平台验证测试
+- [x] **T1.3.2** [REQ-001, REQ-005]: 跨平台验证测试 *(Windows 已验证)*
   - **描述**: 在 Windows (PowerShell/cmd) + macOS + Linux 三平台分别验证 `npm install -g .`（本地包）后 `anws init` 的完整可用性。重点检查 Windows 的 shebang 处理和路径分隔符。
   - **输入**: 所有核心功能完成 (T1.2.1 ~ T1.3.1)
   - **输出**: 测试记录（可为 checklist 注释在 README 中）
@@ -176,7 +176,7 @@ graph TD
 
 ### Phase 1: Foundation (基础设施)
 
-- [ ] **T2.1.1** [REQ-002]: 同步 `.agent/` 模板文件到 `templates/`
+- [x] **T2.1.1** [REQ-002]: 同步 `.agent/` 模板文件到 `templates/`
   - **描述**: 将当前 Antigravity Workflow System 的 `.agent/` 目录内容完整复制到 `src/anws/templates/.agent/`，作为分发内容的 Source of Truth。
   - **输入**: 当前项目的 `.agent/` 目录 (workflows, skills, rules)
   - **输出**: `src/anws/templates/.agent/` 完整目录
@@ -190,7 +190,7 @@ graph TD
   - **依赖**: 无
   - **优先级**: P0
 
-- [ ] **T2.1.2** [REQ-003, REQ-004, REQ-007]: 创建托管文件清单 `lib/manifest.js`
+- [x] **T2.1.2** [REQ-003, REQ-004, REQ-007]: 创建托管文件清单 `lib/manifest.js`
   - **描述**: 创建 `lib/manifest.js`，导出 `MANAGED_FILES` 常量数组，列出 `templates/.agent/` 下所有文件的相对路径（格式为 `.agent/xxx`）。此清单是冲突检测的唯一依据。
   - **输入**: T2.1.1 (templates 目录存在)
   - **输出**: `src/anws/lib/manifest.js`，导出完整的文件路径数组
@@ -207,7 +207,7 @@ graph TD
 
 ### Phase 2: Distribution (发布)
 
-- [ ] **T2.2.1** [REQ-001, REQ-005]: 编写 README.md
+- [x] **T2.2.1** [REQ-001, REQ-005]: 编写 README.md
   - **描述**: 编写完整的用户文档，包含：npm 安装方式、命令使用说明（init / update / --help）、GitHub 手动下载说明、冲突处理说明、系统要求。
   - **输入**: 所有核心功能完成且测试通过
   - **输出**: `src/anws/README.md`
