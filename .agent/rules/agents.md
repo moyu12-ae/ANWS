@@ -36,10 +36,10 @@
 
 > **注意**: 此部分由 `/genesis` 和 `/blueprint` 自动维护。
 
-- **最新架构版本**: `genesis/v1` (初始状态)
-- **活动任务清单**: `尚未生成`
-- **待办任务数**: -
-- **最近一次更新**: `-`
+- **最新架构版本**: `genesis/v1`
+- **活动任务清单**: `genesis/v1/05_TASKS.md`
+- **待办任务数**: 13 (P0: 6, P1: 7)
+- **最近一次更新**: `2026-02-25`
 
 ---
 
@@ -48,7 +48,33 @@
 > **注意**: 此部分由 `/genesis` 维护。
 
 ```text
-(等待 Genesis 初始化结构树...)
+Antigravity-Workflow-System/
+├── genesis/v1/                    # 架构文档 (Source of Truth)
+│   ├── 00_MANIFEST.md
+│   ├── 01_PRD.md
+│   ├── 02_ARCHITECTURE_OVERVIEW.md
+│   ├── 05_TASKS.md                # 由 /blueprint 生成
+│   ├── 06_CHANGELOG.md
+│   ├── 03_ADR/
+│   │   ├── ADR_001_TECH_STACK.md
+│   │   └── ADR_002_CONFLICT_DETECTION.md
+│   └── 04_SYSTEM_DESIGN/          # 待 /design-system 填充
+├── src/
+│   └── anws/                      # CLI npm 包
+│       ├── package.json
+│       ├── bin/
+│       │   └── cli.js             # 主入口 (shebang + parseArgs)
+│       ├── lib/
+│       │   ├── init.js
+│       │   ├── update.js
+│       │   ├── copy.js
+│       │   └── manifest.js
+│       └── templates/
+│           └── .agent/            # 内嵌工作流模板
+└── .agent/                        # 工作流系统自身
+    ├── workflows/
+    ├── skills/
+    └── rules/
 ```
 
 ---
@@ -57,8 +83,13 @@
 
 > **注意**: 此部分由 `/genesis` 维护。
 
-- **在新架构就绪前**: 请勿大规模修改代码。
-- **遇到架构问题**: 请查阅 `genesis/v{N}/03_ADR/`。
+- **架构总览**: `genesis/v1/02_ARCHITECTURE_OVERVIEW.md`
+- **产品需求**: `genesis/v1/01_PRD.md`
+- **技术决策**: `genesis/v1/03_ADR/` (Tech Stack, Conflict Detection)
+- **任务清单**: 待 `/blueprint` 执行后生成 `genesis/v1/05_TASKS.md`
+- **详细系统设计**: 待 `/design-system` 执行后填充 `genesis/v1/04_SYSTEM_DESIGN/`
+- **CLI System**: 源码 `src/anws/` → 设计 `genesis/v1/04_SYSTEM_DESIGN/cli-system.md`
+- **Template Bundle**: 源码 `src/anws/templates/` (无单独设计文档)
 
 ---
 

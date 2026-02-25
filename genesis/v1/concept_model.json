@@ -1,0 +1,102 @@
+{
+  "entities": [
+    {
+      "name": "CLI Binary",
+      "type": "可执行工具",
+      "necessity": "必须",
+      "description": "通过 npm 全局安装的命令行工具，是用户与工作流系统交互的唯一入口"
+    },
+    {
+      "name": "Workflow Package",
+      "type": "数据/资源",
+      "necessity": "必须",
+      "description": "`.agent/` 目录的完整内容：workflows、skills、rules，打包到 npm 包中"
+    },
+    {
+      "name": "Target Project",
+      "type": "外部系统",
+      "necessity": "必须",
+      "description": "用户想要初始化工作流系统的目标项目目录（即 CLI 运行时的 cwd）"
+    },
+    {
+      "name": "Release Version",
+      "type": "元数据",
+      "necessity": "必须",
+      "description": "npm 包版本号，与 GitHub Release tag 对应，用于追踪工作流系统的版本"
+    },
+    {
+      "name": "Install Config",
+      "type": "配置",
+      "necessity": "可选",
+      "description": "用户自定义安装行为的配置，如是否覆盖、选择性安装等子集"
+    }
+  ],
+  "flows": [
+    {
+      "from": "User",
+      "action": "npm install -g",
+      "to": "CLI Binary",
+      "data": "npm 包名",
+      "description": "全局安装 CLI 工具，使命令在任意目录可用"
+    },
+    {
+      "from": "User",
+      "action": "<cmd> init",
+      "to": "Target Project",
+      "data": "Workflow Package (.agent/ 目录)",
+      "description": "在当前目录初始化工作流系统，复制整个 .agent/ 结构"
+    },
+    {
+      "from": "npm publish",
+      "action": "发布",
+      "to": "npm Registry",
+      "data": "包含 .agent/ 内容的 npm 包",
+      "description": "维护者发布新版本到 npm"
+    },
+    {
+      "from": "GitHub Release",
+      "action": "触发",
+      "to": "npm publish",
+      "data": "版本 tag",
+      "description": "GitHub Actions 在 tag push 时自动发布到 npm"
+    }
+  ],
+  "missing_components": [
+    {
+      "component": "冲突处理策略",
+      "category": "错误处理",
+      "priority": "高",
+      "reason": "用户目录可能已存在 .agent/，需要明确覆盖/跳过/合并/prompt 策略"
+    },
+    {
+      "component": "update 子命令",
+      "category": "功能完整性",
+      "priority": "中",
+      "reason": "用户初始安装后，工作流系统更新时如何处理？重新 init 还是专用 update 命令？"
+    },
+    {
+      "component": "版本固定",
+      "category": "可重复性",
+      "priority": "中",
+      "reason": "团队项目中可能需要固定工作流版本，`init --tag v1.2` 之类"
+    },
+    {
+      "component": "CI/CD 发布管道",
+      "category": "基础设施",
+      "priority": "高",
+      "reason": "需要 GitHub Actions workflow 来自动化 npm publish"
+    },
+    {
+      "component": "命令名称",
+      "category": "UX",
+      "priority": "高",
+      "reason": "用户对 anws 存有疑虑，需要确认或替代方案"
+    }
+  ],
+  "questions_for_user": [
+    "1. 命令名称：anws 是候选，另有备选 agw（3字符，Antigravity Workflows）。倾向于哪个？",
+    "2. .agent/ 已存在时的行为：直接覆盖、跳过已有文件、还是交互式询问？",
+    "3. 是否需要 update 子命令，还是重新 init 即可？",
+    "4. 是否需要版本固定（init --tag v1.0）？"
+  ]
+}
