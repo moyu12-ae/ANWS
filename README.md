@@ -93,7 +93,7 @@ Copy-Item -Recurse Antigravity-Workflow-System/.agent -Destination .
          └────────┬────────┘     /change       /genesis
                   │            (modify only)  (new tasks)
                   ▼                │            │
-           /design-system <--------+-----------+
+           /design-system <--------+------------+
           (optional, recommended)
                   |
                   v

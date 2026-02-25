@@ -82,8 +82,8 @@ Copy-Item -Recurse Antigravity-Workflow-System/.agent -Destination .
            ┌─────────────────┼─────────────────┐
            ▼                 ▼                 ▼
     ┌──────────┐      ┌──────────┐      ┌──────────┐
-    │   新项目   │      │  接手旧代码 │      │ 现有项目 │
-    │   (New)  │      │  (Legacy) │      │  变更    │
+    │   新项目  │     │ 接手旧代码 │     │  现有项目 │
+    │   (New)  │      │  (Legacy) │     │  变更    │
     └────┬─────┘      └────┬─────┘      └────┬─────┘
          │                 │                 │
          ▼                 ▼                 ▼
@@ -93,19 +93,19 @@ Copy-Item -Recurse Antigravity-Workflow-System/.agent -Destination .
          └────────┬────────┘     /change      /genesis
                   │            (仅修改)    (新任务/新功能)
                   ▼                │            │
-           /design-system <--------+-----------+
+           /design-system <--------+------------+
            (可选，强烈建议)
                   |
                   v
             /challenge
-          (审查与质疑)
+            (审查与质疑)
                   |
                   v
              /blueprint
                   |
                   v
                /forge
-         (代码交付)
+              (代码交付)
 ```
 
 ---
