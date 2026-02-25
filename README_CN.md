@@ -31,7 +31,21 @@
 
 ## 🚀 快速开始
 
-### 1. 复制到你的项目
+### 方式 A — npm CLI（推荐）
+
+```bash
+npm install -g @haaaiawd/anws
+cd your-project
+anws init
+```
+
+> 需要 Node.js ≥ 18。
+
+### 方式 B — GitHub Release
+
+从 [Releases](https://github.com/Haaaiawd/Antigravity-Workflow-System/releases) 下载最新 `.zip`，将其中的 `.agent/` 目录复制到你的项目根目录。
+
+### 方式 C — 克隆仓库
 
 ```bash
 # 克隆本仓库
@@ -44,7 +58,7 @@ cp -r Antigravity-Workflow-System/.agent ./
 Copy-Item -Recurse Antigravity-Workflow-System/.agent -Destination .
 ```
 
-### 2. 你的第一个项目 🐣
+### 你的第一个项目 🐣
 
 > **示例提示词**: "我想做一个 Web 版的 macOS 系统模拟器，包含 Dock、顶栏和几个系统应用，请你根据开发流程从0开启这个新项目吧"
 
@@ -118,6 +132,7 @@ Copy-Item -Recurse Antigravity-Workflow-System/.agent -Destination .
 | `/design-system` | 单个系统的详细设计 | 架构概览 | System Design 文档 |
 | `/challenge` | 系统性三维度质疑审查 | 完整设计文档 | 质疑报告 (分级) |
 | `/blueprint` | 将架构拆解为任务清单 | PRD + 架构 | TASKS.md (WBS) |
+| `/forge` | 执行任务 — 将架构锻造为代码 | TASKS.md | 可运行的代码，已验证 |
 | `/change` | 微调已有任务（禁止新增） | 已有任务的微调需求 | 更新后的任务清单 + 设计文件 (仅修改) |
 | `/explore` | 深度调研与头脑风暴 | 话题/问题 | 探索报告 |
 | `/craft` | 创建工作流/技能/提示词 | 创建需求 | Workflow / Skill / Prompt 文档 |

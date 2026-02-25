@@ -9,10 +9,10 @@
     "cli",
     "developer-tools"
   ],
-  "homepage": "https://github.com/your-org/antigravity-workflow-system",
+  "homepage": "https://github.com/Haaaiawd/Antigravity-Workflow-System",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/your-org/antigravity-workflow-system.git"
+    "url": "git+https://github.com/Haaaiawd/Antigravity-Workflow-System.git"
   },
   "author": "haaaiawd <1134180104@qq.com>",
   "license": "MIT",

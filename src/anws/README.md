@@ -61,7 +61,7 @@ anws update
 
 ```bash
 # 克隆仓库
-git clone https://github.com/YOYZHANG/Antigravity-Workflow-System.git
+git clone https://github.com/Haaaiawd/Antigravity-Workflow-System.git
 
 # 将 templates/.agent/ 复制到你的项目
 cp -r Antigravity-Workflow-System/src/anws/templates/.agent/ my-project/

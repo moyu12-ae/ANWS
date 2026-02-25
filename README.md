@@ -31,7 +31,21 @@ A **structured workflow framework** for Agentic AI assistants, designed to solve
 
 ## 🚀 Quick Start
 
-### 1. Copy to Your Project
+### Option A — npm CLI (Recommended)
+
+```bash
+npm install -g @haaaiawd/anws
+cd your-project
+anws init
+```
+
+> Requires Node.js ≥ 18.
+
+### Option B — GitHub Release
+
+Download the latest `.zip` from [Releases](https://github.com/Haaaiawd/Antigravity-Workflow-System/releases), then copy `.agent/` to your project root.
+
+### Option C — Clone
 
 ```bash
 # Clone this repository
@@ -44,7 +58,7 @@ cp -r Antigravity-Workflow-System/.agent ./
 Copy-Item -Recurse Antigravity-Workflow-System/.agent -Destination .
 ```
 
-### 2. Your First Project 🐣
+### Your First Project 🐣
 
 > **Example Prompt**: "I want to build a web-based macOS simulator, including Dock, top bar, and several system apps. Please start this new project from scratch according to the development process."
 
@@ -118,6 +132,7 @@ Copy-Item -Recurse Antigravity-Workflow-System/.agent -Destination .
 | `/design-system` | Detailed design for a system | Architecture | System Design doc |
 | `/challenge` | Systemic 3-tier review & audit | Full Design Docs | Challenge Report (Graded) |
 | `/blueprint` | Break architecture into tasks | PRD + Arch | TASKS.md (WBS) |
+| `/forge` | Execute tasks — architecture to code | TASKS.md | Working code, verified |
 | `/change` | Tweak existing tasks (no new tasks) | Minor tweak | Updated TASKS + Design files (modify only) |
 | `/explore` | Deep research & brainstorm | Topic/Question | Exploration report |
 | `/craft` | Create workflows/skills/prompts | Creation request | Workflow / Skill / Prompt docs |
