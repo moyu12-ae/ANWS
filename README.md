@@ -45,18 +45,15 @@ anws init
 
 Download the latest `.zip` from [Releases](https://github.com/Haaaiawd/Antigravity-Workflow-System/releases), then copy `.agent/` to your project root.
 
-### Option C — Clone
+### 📦 Update Existing Installation
 
 ```bash
-# Clone this repository
-git clone https://github.com/Haaaiawd/Antigravity-Workflow-System.git
-
-# Copy .agent/ to your project root
-# Unix/Mac:
-cp -r Antigravity-Workflow-System/.agent ./
-# Windows PowerShell:
-Copy-Item -Recurse Antigravity-Workflow-System/.agent -Destination .
+cd your-project
+anws update
 ```
+
+> `anws update` overwrites all managed workflow/skill files to the latest version while **preserving** your `agents.md`.
+> If the `agents.md` template has new content, an `agents.md.new` file will be generated for you to merge manually.
 
 ### Your First Project 🐣
 
@@ -214,8 +211,10 @@ your-project/
 │   │   ├── design-system.md
 │   │   ├── challenge.md
 │   │   ├── blueprint.md
+│   │   ├── forge.md
 │   │   ├── change.md
-│   │   └── explore.md
+│   │   ├── explore.md
+│   │   └── craft.md
 │   │
 │   └── skills/            # Reusable skills
 │       ├── concept-modeler/
@@ -232,40 +231,6 @@ your-project/
     │   └── 07_CHALLENGE_REPORT.md
     └── v2/                # New version on major changes
 ```
-
----
-
-## 🤔 FAQ
-
-<details>
-<summary><b>Why not just use .cursorrules?</b></summary>
-
-`.cursorrules` defines **how** to write code (style, patterns).  
-This framework defines **what** to build (requirements, architecture, tasks).
-
-They solve different problems. You can use both.
-</details>
-
-<details>
-<summary><b>Does this work with Cursor or Copilot?</b></summary>
-
-No. This framework requires **Agentic AI** capabilities:
-- Reading arbitrary files in the workspace
-- Writing new files
-- Executing commands
-
-Cursor/Copilot don't have these capabilities in their chat interfaces.
-</details>
-
-<details>
-<summary><b>What's the learning curve?</b></summary>
-
-- **5 minutes**: Understand the concept
-- **1 project**: Get comfortable with `/genesis` → `/blueprint` flow
-- **3 projects**: Master the full system
-</details>
-
----
 
 ## 🙌 Contributing
 

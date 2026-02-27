@@ -45,18 +45,15 @@ anws init
 
 从 [Releases](https://github.com/Haaaiawd/Antigravity-Workflow-System/releases) 下载最新 `.zip`，将其中的 `.agent/` 目录复制到你的项目根目录。
 
-### 方式 C — 克隆仓库
+### 📦 更新已有安装
 
 ```bash
-# 克隆本仓库
-git clone https://github.com/Haaaiawd/Antigravity-Workflow-System.git
-
-# 将 .agent/ 目录复制到你的项目根目录
-# Mac/Linux:
-cp -r Antigravity-Workflow-System/.agent ./
-# Windows PowerShell:
-Copy-Item -Recurse Antigravity-Workflow-System/.agent -Destination .
+cd your-project
+anws update
 ```
+
+> `anws update` 会覆盖所有托管的工作流/技能文件至最新版本，同时**保留**你的 `agents.md` 不被覆盖。
+> 如果 `agents.md` 模板有新内容，会生成 `agents.md.new` 供你手动合并。
 
 ### 你的第一个项目 🐣
 
@@ -214,8 +211,10 @@ your-project/
 │   │   ├── design-system.md
 │   │   ├── challenge.md
 │   │   ├── blueprint.md
+│   │   ├── forge.md
 │   │   ├── change.md
-│   │   └── explore.md
+│   │   ├── explore.md
+│   │   └── craft.md
 │   │
 │   └── skills/            # 可复用的技能库
 │       ├── concept-modeler/
@@ -232,6 +231,10 @@ your-project/
     │   └── 07_CHALLENGE_REPORT.md
     └── v2/                # 重大变更时的新版本
 ```
+
+## 🙌 Contributing
+
+Contributions are welcome! Please read our contributing guidelines before submitting PRs.
 
 ---
 
