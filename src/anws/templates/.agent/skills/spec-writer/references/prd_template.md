@@ -55,20 +55,32 @@
 ## 4. User Stories (The "What")
 <!-- Format: As a [User], I want to [Action], so that [Benefit] -->
 <!-- ⚠️ CRITICAL: 每个User Story必须有唯一ID [REQ-XXX]，用于追溯链 -->
+<!-- ⚠️ CRITICAL: User Stories 必须按用户价值优先级排序 (P0 → P1 → P2) -->
+<!-- ⚠️ CRITICAL: 每个 User Story 必须具备独立可测性——完成后可以独立演示和验证，不依赖其他 Story -->
 
-### US01: [Title] [REQ-001]
+### US-001: [Title] [REQ-001] (Priority: P0)
+
 *   **Story**: As a [role], I want to [feature], so that [value].
+*   **用户价值**: [一句话描述这个 story 对用户的核心价值]
+*   **独立可测**: [这个 story 完成后如何独立验证？不依赖其他 story 即可演示]
+*   **涉及系统**: [列出涉及的系统 ID，如: core, client, bridge — 与 02_ARCHITECTURE 对齐]
 *   **Acceptance Criteria (AC)**:
     *   [ ] **Given** [context], **When** [action], **Then** [outcome].
     *   [ ] **Error Case**: When [failure condition], show [specific error message].
-*   **Priority**: P0 (Must Have) | P1 (Should Have) | P2 (Nice to Have)
-*   **Estimation**: [Story Points 或 天数] - 可选
+*   **边界情况**:
+    *   [边界条件1 — 如: 超大数据量 / 离线状态 / 权限不足]
+    *   [边界条件2]
 
-### US02: [Title] [REQ-002]
+### US-002: [Title] [REQ-002] (Priority: P1)
+
 *   **Story**: ...
+*   **用户价值**: ...
+*   **独立可测**: ...
+*   **涉及系统**: ...
 *   **Acceptance Criteria (AC)**:
     *   [ ] ...
-*   **Priority**: P0/P1/P2
+*   **边界情况**:
+    *   ...
 
 <!-- 继续添加更多User Stories... -->
 

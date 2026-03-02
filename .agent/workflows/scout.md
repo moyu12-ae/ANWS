@@ -1,5 +1,6 @@
 ---
 description: 探测系统风险、隐藏耦合和"改了就炸"的暗坑，通过 Git 热点分析和 Gap Analysis 产出风险报告，适用于接手遗留项目或重大变更前。
+
 ---
 
 # /scout
@@ -128,3 +129,11 @@ Scout 的发现将作为**输入**反馈给 Architectural Overview。
 - ✅ 发现了文档与代码的 Gap
 - ✅ 产出了带有时间戳的风险报告
 </completion_criteria>
+
+---
+
+## 🔀 Handoffs
+
+完成本工作流后，根据情况选择：
+
+- **启动新版本架构** → `/genesis` — 基于侦察发现启动架构重构 *(发现需要重大重构时)*

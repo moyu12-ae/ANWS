@@ -36,9 +36,10 @@
 
 > **注意**: 此部分由 `/genesis`、`/blueprint` 和 `/forge` 自动维护。
 
-- **最新架构版本**: `genesis/v1`
-- **活动任务清单**: `genesis/v1/05_TASKS.md`
-- **最近一次更新**: `2026-02-25`
+- **最新架构版本**: `尚未初始化`
+- **活动任务清单**: `尚未生成`
+- **待办任务数**: -
+- **最近一次更新**: `-`
 
 ### 🌊 Wave 1 — 待 /blueprint 或 /forge 设置
 _尚未开始执行_
@@ -50,33 +51,7 @@ _尚未开始执行_
 > **注意**: 此部分由 `/genesis` 维护。
 
 ```text
-Antigravity-Workflow-System/
-├── genesis/v1/                    # 架构文档 (Source of Truth)
-│   ├── 00_MANIFEST.md
-│   ├── 01_PRD.md
-│   ├── 02_ARCHITECTURE_OVERVIEW.md
-│   ├── 05_TASKS.md                # 由 /blueprint 生成
-│   ├── 06_CHANGELOG.md
-│   ├── 03_ADR/
-│   │   ├── ADR_001_TECH_STACK.md
-│   │   └── ADR_002_CONFLICT_DETECTION.md
-│   └── 04_SYSTEM_DESIGN/          # 待 /design-system 填充
-├── src/
-│   └── anws/                      # CLI npm 包
-│       ├── package.json
-│       ├── bin/
-│       │   └── cli.js             # 主入口 (shebang + parseArgs)
-│       ├── lib/
-│       │   ├── init.js
-│       │   ├── update.js
-│       │   ├── copy.js
-│       │   └── manifest.js
-│       └── templates/
-│           └── .agent/            # 内嵌工作流模板
-└── .agent/                        # 工作流系统自身
-    ├── workflows/
-    ├── skills/
-    └── rules/
+(等待 Genesis 初始化结构树...)
 ```
 
 ---
@@ -85,13 +60,8 @@ Antigravity-Workflow-System/
 
 > **注意**: 此部分由 `/genesis` 维护。
 
-- **架构总览**: `genesis/v1/02_ARCHITECTURE_OVERVIEW.md`
-- **产品需求**: `genesis/v1/01_PRD.md`
-- **技术决策**: `genesis/v1/03_ADR/` (Tech Stack, Conflict Detection)
-- **任务清单**: 待 `/blueprint` 执行后生成 `genesis/v1/05_TASKS.md`
-- **详细系统设计**: 待 `/design-system` 执行后填充 `genesis/v1/04_SYSTEM_DESIGN/`
-- **CLI System**: 源码 `src/anws/` → 设计 `genesis/v1/04_SYSTEM_DESIGN/cli-system.md`
-- **Template Bundle**: 源码 `src/anws/templates/` (无单独设计文档)
+- **在新架构就绪前**: 请勿大规模修改代码。
+- **遇到架构问题**: 请查阅 `genesis/v{N}/03_ADR/`。
 
 ---
 
@@ -99,6 +69,7 @@ Antigravity-Workflow-System/
 
 | 工作流 | 触发时机 | 产出 |
 |--------|---------|------|
+| `/quickstart` | 新用户入口 / 不知道从哪开始 | 编排其他工作流 |
 | `/genesis` | 新项目 / 重大重构 | PRD, Architecture, ADRs |
 | `/scout` | 变更前 / 接手项目 | `genesis/v{N}/00_SCOUT_REPORT.md` |
 | `/design-system` | genesis 后 | 04_SYSTEM_DESIGN/*.md |
@@ -119,5 +90,23 @@ Antigravity-Workflow-System/
 4. **美学**: 文档应该是美的。善用 Markdown 和 Emoji。
 
 ---
+## 🔄 Auto-Updated Context
 
-> **状态自检**: 准备好了？读取上方"当前状态"指引的架构文档并开始吧。
+<!-- AUTO:BEGIN — 由工作流自动维护，请勿手动编辑此区块 -->
+
+### 技术栈决策
+- [由 genesis/tech-evaluator 自动填充]
+
+### 系统边界
+- [由 genesis/system-architect 自动填充]
+
+### 活跃 ADR
+- [由 genesis 自动填充 ADR 摘要]
+
+### 当前任务状态
+- [由 blueprint/forge 自动更新]
+
+<!-- AUTO:END -->
+
+---
+> **状态自检**: 准备好了？运行 `/genesis` 开始你的第一个项目设计吧。

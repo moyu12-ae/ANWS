@@ -183,9 +183,54 @@ graph TD
 
 ---
 
-## Step 6: 生成文档
+## Step 5.5: User Story Overlay (交叉验证)
 
-**目标**: 保存最终的任务清单，并**更新 AGENTS.md**。
+**目标**: 从**用户价值维度**验证任务完备性。WBS 按系统拆解，这一步从 User Story 视角交叉检查。
+
+> [!IMPORTANT]
+> **User Story Overlay 是覆盖率安全网**
+>
+> WBS 确保每个系统都有任务，但无法保证每个用户故事都能端到端跑通。
+> 这一步能捕获"系统内任务齐全，但跨系统 User Story 链断裂"的问题。
+
+### 执行步骤
+
+1. **读取 PRD 的 User Stories**: 从 `{TARGET_DIR}/01_PRD.md` 提取所有 `US-XXX`
+2. **构建映射**: 将每个 US 涉及的系统 → 对应的 tasks（通过 REQ 追溯 + 系统归属匹配）
+3. **验证三项闭环**:
+   - 每个 US 是否有足够的 tasks 覆盖其**所有涉及系统**？
+   - 每个 US 的 task 链是否能形成**可独立验证**的闭环？
+   - 高优先级 US (P0) 的 task 是否分布在靠前的 Sprint？
+
+4. **生成 User Story View**: 追加到 `05_TASKS.md` 末尾
+
+### User Story View 格式
+
+```markdown
+## 🎯 User Story Overlay
+
+### US-001: [标题] (P1)
+**涉及任务**: T2.1.1 → T2.1.2 → T7.2.1 → T6.1.2
+**关键路径**: T2.1.1 → T2.1.2 → T7.2.1
+**独立可测**: ✅ S1 结束即可演示
+**覆盖状态**: ✅ 完整
+
+### US-003: [标题] (P2)
+**涉及任务**: T3.2.1
+**关键路径**: T3.1.1 → T3.2.1
+**独立可测**: ❌ 缺少 T4.x 衔接
+**覆盖状态**: ⚠️ 不完整 — 缺少 executor 侧任务
+```
+
+### 覆盖 GAP 处理
+
+- 如有不完整的 US → 在 Overlay 中标注 `⚠️`，并在任务清单中补充缺失的 task
+- 如有 US 的 task 全部在后期 Sprint → 建议前移部分 task 以实现早期验证
+- 补充的 task 必须遵守 Step 2 的任务格式模板
+
+---
+
+## Step 6: 生成文档
 
 **目标**: 保存最终的任务清单，并**更新 .agent/rules/agents.md**。
 
@@ -208,6 +253,7 @@ graph TD
 - ✅ 每个任务是否有 Context 和 Acceptance Criteria？
 - ✅ 任务间的输入/输出是否对齐（接口追溯）？
 - ✅ 是否生成了 Mermaid 依赖图？
+- ✅ User Story Overlay 已生成，覆盖 GAP 已补充？
 - ✅ 已更新 .agent/rules/agents.md（含初始波次建议）？
 
 ---
@@ -234,6 +280,23 @@ graph TD
 
 ---
 
+### Agent Context 自更新
+
+**更新 `.agent/rules/agents.md` 的 `AUTO:BEGIN` ~ `AUTO:END` 区块**:
+
+在 `### 当前任务状态` 下写入：
+
+```markdown
+### 当前任务状态
+- 任务清单: genesis/v{N}/05_TASKS.md
+- 总任务数: {N}, P0: {X}, P1: {Y}, P2: {Z}
+- Sprint 数: {S}
+- Wave 1 建议: T{X.Y.Z}, T{X.Y.Z}, T{X.Y.Z}
+- 最近更新: {Today}
+```
+
+---
+
 <completion_criteria>
 - ✅ 定位到最新架构版本 `v{N}`
 - ✅ 任务清单 `05_TASKS.md` 已生成
@@ -241,6 +304,17 @@ graph TD
 - ✅ 任务间输入/输出已对齐（接口追溯）
 - ✅ 每个 Sprint 有退出标准和 INT 集成验证任务
 - ✅ 生成了 Mermaid 依赖图
+- ✅ User Story Overlay 已生成并验证覆盖完整性
 - ✅ 已更新 .agent/rules/agents.md（含初始波次建议）
+- ✅ 更新了 agents.md AUTO:BEGIN 区块 (当前任务状态)
 - ✅ 用户已确认
 </completion_criteria>
+
+---
+
+## 🔀 Handoffs
+
+完成本工作流后，根据情况选择：
+
+- **质疑设计与任务** → `/challenge` — 对设计和任务清单进行系统性审查
+- **开始编码执行** → `/forge` — 按任务清单开始波次执行

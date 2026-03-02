@@ -481,6 +481,11 @@ Phase 3: 回归测试 (Regression)
 - [ ] 所有Task关联PRD需求或标注为[基础]
 - [ ] 跨系统集成任务已识别
 
+### User Story 覆盖
+- [ ] 每个 US-XXX 有足够的 tasks 覆盖其所有涉及系统
+- [ ] 每个 US 的 task 链能形成可独立验证的闭环
+- [ ] 高优先级 US (P0) 的 task 分布在靠前的 Sprint
+
 ---
 
 ## 🚀 快速上手示例
