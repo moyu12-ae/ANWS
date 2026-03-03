@@ -20,12 +20,12 @@ A **structured workflow framework** for Agentic AI assistants, designed to solve
 
 ### 🎯 Problems We Solve
 
-| Pain Point | The Problem | Our Solution |
-|------------|-------------|--------------|
-| **Architecture Drift** | AI generates inconsistent patterns across the same codebase | `/genesis` forces PRD & architecture design first |
-| **Spaghetti Code** | AI lacks project context, writes code that doesn't fit | Tasks include constraints & acceptance criteria |
-| **Context Amnesia** | New session = AI forgets all previous decisions | `.agent/rules/agents.md` + versioned docs as persistent memory |
-| **Lack of Planning** | Vibe Coding skips design, creates tech debt | Mandatory design-first workflow |
+| Pain Point             | The Problem                                                 | Our Solution                                                   |
+| ---------------------- | ----------------------------------------------------------- | -------------------------------------------------------------- |
+| **Architecture Drift** | AI generates inconsistent patterns across the same codebase | `/genesis` forces PRD & architecture design first              |
+| **Spaghetti Code**     | AI lacks project context, writes code that doesn't fit      | Tasks include constraints & acceptance criteria                |
+| **Context Amnesia**    | New session = AI forgets all previous decisions             | `.agent/rules/agents.md` + versioned docs as persistent memory |
+| **Lack of Planning**   | Vibe Coding skips design, creates tech debt                 | Mandatory design-first workflow                                |
 
 ---
 
@@ -58,6 +58,11 @@ anws update
 ### Your First Project 🐣
 
 > **Example Prompt**: "I want to build a web-based macOS simulator, including Dock, top bar, and several system apps. Please start this new project from scratch according to the development process."
+
+### 🔁 Built with Itself (Dogfooding)
+
+Fun fact: **This very CLI tool (`anws`) was built using its own workflows!**
+We used the `/genesis` workflow to design the CLI's architecture, and the `/forge` workflow to implement the code. This project serves as a live demonstration of what Antigravity Workflow System can achieve.
 
 **Deep Thinking & Architecture Design**: The AI will automatically execute the `/genesis` workflow, thinking deeply about project requirements and producing the PRD and architecture design.
 <img src="assets/genesis工作流演示.jpg" width="800" alt="Genesis Workflow">
@@ -134,17 +139,17 @@ anws update
 
 ## 📋 Workflows
 
-| Command | Purpose | Input | Output |
-|---------|---------|-------|--------|
-| `/genesis` | Start from zero, create PRD & architecture | Vague idea | PRD, Architecture, ADRs |
-| `/scout` | Analyze legacy codebase risks | Existing code | Risk report, Gap analysis |
-| `/design-system` | Detailed design for a system | Architecture | System Design doc |
-| `/challenge` | Systemic 3-tier review & audit | Full Design Docs | Challenge Report (Graded) |
-| `/blueprint` | Break architecture into tasks | PRD + Arch | TASKS.md (WBS) |
-| `/forge` | Execute tasks — architecture to code | TASKS.md | Working code, verified |
-| `/change` | Tweak existing tasks (no new tasks) | Minor tweak | Updated TASKS + Design files (modify only) |
-| `/explore` | Deep research & brainstorm | Topic/Question | Exploration report |
-| `/craft` | Create workflows/skills/prompts | Creation request | Workflow / Skill / Prompt docs |
+| Command          | Purpose                                    | Input            | Output                                     |
+| ---------------- | ------------------------------------------ | ---------------- | ------------------------------------------ |
+| `/genesis`       | Start from zero, create PRD & architecture | Vague idea       | PRD, Architecture, ADRs                    |
+| `/scout`         | Analyze legacy codebase risks              | Existing code    | Risk report, Gap analysis                  |
+| `/design-system` | Detailed design for a system               | Architecture     | System Design doc                          |
+| `/challenge`     | Systemic 3-tier review & audit             | Full Design Docs | Challenge Report (Graded)                  |
+| `/blueprint`     | Break architecture into tasks              | PRD + Arch       | TASKS.md (WBS)                             |
+| `/forge`         | Execute tasks — architecture to code       | TASKS.md         | Working code, verified                     |
+| `/change`        | Tweak existing tasks (no new tasks)        | Minor tweak      | Updated TASKS + Design files (modify only) |
+| `/explore`       | Deep research & brainstorm                 | Topic/Question   | Exploration report                         |
+| `/craft`         | Create workflows/skills/prompts            | Creation request | Workflow / Skill / Prompt docs             |
 
 ---
 
@@ -152,12 +157,12 @@ anws update
 
 > ⚠️ **Important**: This framework requires **Antigravity** environment with `.agent/workflows/` support.
 
-| Environment | Status | Notes |
-|-------------|:------:|-------|
-| **Antigravity** | ✅ Supported | Full workflow + skills support |
-| Claude Code | ❌ No native workflow support | |
-| Cursor | ❌ No workflow support | |
-| GitHub Copilot | ❌ No workflow support | |
+| Environment     |            Status            | Notes                          |
+| --------------- | :--------------------------: | ------------------------------ |
+| **Antigravity** |         ✅ Supported          | Full workflow + skills support |
+| Claude Code     | ❌ No native workflow support |                                |
+| Cursor          |    ❌ No workflow support     |                                |
+| GitHub Copilot  |    ❌ No workflow support     |                                |
 
 **What is Antigravity?**
 
