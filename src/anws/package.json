@@ -1,6 +1,6 @@
 {
   "name": "@haaaiawd/anws",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "A spec-driven workflow framework for AI-assisted development. Empowers prompt engineers to build production-ready software through structured PRD → Architecture → Task decomposition. Designed for Antigravity to enforce design-first principles and prevent architectural drift in vibe coding.",
   "keywords": [
     "antigravity",
