@@ -36,9 +36,20 @@ async function init() {
   info('Initializing Antigravity Workflow System...');
   blank();
 
-  const written = await copyDir(srcRoot, destRoot);
+  const writtenFiles = await copyDir(srcRoot, destRoot);
+  const written = Array.isArray(writtenFiles) ? writtenFiles : [];
 
-  // 存储 agents.md 模板指纹，供后续 update 检测模板变化
+  // 把外层的 AGENTS.md 拷贝出来
+  const srcAgents = path.join(__dirname, '..', 'templates', 'AGENTS.md');
+  const destAgents = path.join(cwd, 'AGENTS.md');
+  try {
+    await fs.copyFile(srcAgents, destAgents);
+    written.push(destAgents);
+  } catch (e) {
+    // 忽略
+  }
+
+  // 存储 AGENTS.md 模板指纹，供后续 update 检测模板变化
   await storeAgentsTemplateHash(srcRoot, cwd);
 
   // 打印文件列表
@@ -160,19 +171,19 @@ function printSummary(files, skipped = [], action) {
 function printNextSteps() {
   blank();
   info('Next steps:');
-  info('  1. Read .agent/rules/agents.md to understand the system');
+  info('  1. Read AGENTS.md to understand the system');
   info('  2. Run /quickstart in your AI assistant to analyze and start the workflow');
 }
 
 /**
- * 存储 agents.md 模板的 MD5 指纹。
+ * 存储 AGENTS.md 模板的 MD5 指纹。
  * 供 `anws update` 检测模板是否在版本间发生了变化。
  * @param {string} srcRoot  模板 .agent/ 目录绝对路径
  * @param {string} cwd      项目根目录
  */
 async function storeAgentsTemplateHash(srcRoot, cwd) {
-  const templatePath = path.join(srcRoot, 'rules', 'agents.md');
-  const hashPath = path.join(cwd, '.agent', 'rules', '.agents-template-hash');
+  const templatePath = path.join(path.dirname(srcRoot), 'AGENTS.md');
+  const hashPath = path.join(cwd, '.agents-template-hash');
 
   try {
     const content = await fs.readFile(templatePath, 'utf-8');

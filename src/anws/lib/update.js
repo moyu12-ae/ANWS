@@ -78,12 +78,12 @@ async function update() {
 
   if (agentsMerged) {
     blank();
-    warn('agents.md template has changed!');
+    warn('AGENTS.md template has changed!');
     info('A new template has been saved to:');
-    info('  .agent/rules/agents.md.new');
+    info('  AGENTS.md.new');
     blank();
-    info('Please review and merge the changes into your agents.md.');
-    info('After merging, delete agents.md.new.');
+    info('Please review and merge the changes into your AGENTS.md.');
+    info('After merging, delete AGENTS.md.new.');
   }
 }
 
@@ -111,18 +111,18 @@ async function askUpdate() {
 }
 
 /**
- * 检查 agents.md 模板是否相比上次安装/更新有变化。
+ * 检查 AGENTS.md 模板是否相比上次安装/更新有变化。
  * 用 hash 文件记录上次模板指纹，与新模板比较。
- * 如果有变化 → 写入 agents.md.new + 更新 hash。
+ * 如果有变化 → 写入 AGENTS.md.new + 更新 hash。
  *
  * @param {string} cwd       项目根目录
  * @param {string} srcRoot   模板 .agent/ 目录
  * @returns {Promise<boolean>} 是否产生了 .new 文件
  */
 async function checkAgentsTemplate(cwd, srcRoot) {
-  const templatePath = path.join(path.dirname(srcRoot), '.agent', 'rules', 'agents.md');
-  const hashPath = path.join(cwd, '.agent', 'rules', '.agents-template-hash');
-  const newPath = path.join(cwd, '.agent', 'rules', 'agents.md.new');
+  const templatePath = path.join(path.dirname(srcRoot), 'AGENTS.md');
+  const hashPath = path.join(cwd, '.agents-template-hash');
+  const newPath = path.join(cwd, 'AGENTS.md.new');
 
   const templateExists = await fs.access(templatePath).then(() => true).catch(() => false);
   if (!templateExists) return false;

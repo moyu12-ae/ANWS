@@ -11,7 +11,7 @@
 
 **当你开始新会话或感到"迷失"时，立即执行**:
 
-1. **读取 .agent/rules/agents.md** → 获取项目地图
+1. **读取根目录的 AGENTS.md** → 获取项目地图
 2. **查看下方"当前状态"** → 找到最新架构版本
 3. **读取 `genesis/v{N}/05_TASKS.md`** → 了解当前待办
 4. **开始工作**
@@ -73,11 +73,11 @@ _尚未开始执行_
 | `/genesis` | 新项目 / 重大重构 | PRD, Architecture, ADRs |
 | `/scout` | 变更前 / 接手项目 | `genesis/v{N}/00_SCOUT_REPORT.md` |
 | `/design-system` | genesis 后 | 04_SYSTEM_DESIGN/*.md |
-| `/blueprint` | genesis 后 | 05_TASKS.md + agents.md 初始 Wave |
+| `/blueprint` | genesis 后 | 05_TASKS.md + AGENTS.md 初始 Wave |
 | `/change` | 微调已有任务 | 更新 TASKS + SYSTEM_DESIGN (仅修改) + CHANGELOG |
 | `/explore` | 调研时 | 探索报告 |
 | `/challenge` | 决策前质疑 | 07_CHALLENGE_REPORT.md (含问题总览目录) |
-| `/forge` | 编码执行 | 代码 + 更新 agents.md Wave 块 |
+| `/forge` | 编码执行 | 代码 + 更新 AGENTS.md Wave 块 |
 | `/craft` | 创建工作流/技能/提示词 | Workflow / Skill / Prompt 文档 |
 
 ---

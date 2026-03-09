@@ -6,7 +6,7 @@
  * 此数组列出 anws 包负责管理的所有文件路径（相对于目标项目根目录）。
  */
 const MANAGED_FILES = [
-  '.agent/rules/agents.md',
+  'AGENTS.md',
   '.agent/skills/build-inspector/SKILL.md',
   '.agent/skills/complexity-guard/references/anti_patterns.md',
   '.agent/skills/complexity-guard/SKILL.md',
@@ -53,7 +53,7 @@ const MANAGED_FILES = [
  * anws update 默认会跳过这些文件。
  */
 const USER_PROTECTED_FILES = [
-  '.agent/rules/agents.md'
+  'AGENTS.md'
 ];
 
 module.exports = {
