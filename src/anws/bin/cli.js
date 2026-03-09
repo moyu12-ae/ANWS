@@ -34,10 +34,15 @@ const { values, positionals } = parseArgs({
   options: {
     version: { type: 'boolean', short: 'v', default: false },
     help:    { type: 'boolean', short: 'h', default: false },
+    yes:     { type: 'boolean', short: 'y', default: false },
   },
   strict: false,
   allowPositionals: true,
 });
+
+if (values.yes) {
+  global.__ANWS_FORCE_YES = true;
+}
 
 // ─── 命令路由 ─────────────────────────────────────────────────────────────────
 async function main() {

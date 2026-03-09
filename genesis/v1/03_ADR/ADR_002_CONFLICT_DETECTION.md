@@ -26,7 +26,7 @@
 ```js
 // lib/manifest.js
 const MANAGED_FILES = [
-  '.agent/rules/agents.md',
+  'AGENTS.md',
   '.agent/workflows/genesis.md',
   '.agent/workflows/blueprint.md',
   '.agent/workflows/forge.md',

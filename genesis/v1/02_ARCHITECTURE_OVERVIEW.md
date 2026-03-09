@@ -146,7 +146,7 @@ src/
             ├── skills/
             │   └── ...
             └── rules/
-                └── agents.md
+                └── AGENTS.md
 
 genesis/v1/                        # 架构文档（本目录，只读参考）
 ```

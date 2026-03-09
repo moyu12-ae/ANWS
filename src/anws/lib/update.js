@@ -2,7 +2,6 @@
 
 const fs = require('node:fs/promises');
 const path = require('node:path');
-const crypto = require('node:crypto');
 const { MANAGED_FILES, USER_PROTECTED_FILES } = require('./manifest');
 const { success, warn, error, info, fileLine, skippedLine, blank, logo } = require('./output');
 
@@ -33,10 +32,34 @@ async function update() {
   logo();
   // 仅覆盖托管文件；USER_PROTECTED_FILES 永远跳过
   const srcRoot = path.join(__dirname, '..', 'templates', '.agent');
+  let skipNewAgentsMd = false;
+  
+  const legacyAgentsPath = path.join(cwd, '.agent', 'rules', 'agents.md');
+  const legacyExists = await fs.access(legacyAgentsPath).then(() => true).catch(() => false);
+  const rootAgentsPath = path.join(cwd, 'AGENTS.md');
+  const rootExists = await fs.access(rootAgentsPath).then(() => true).catch(() => false);
+
+  if (legacyExists && !rootExists) {
+    const migrate = await askMigrate();
+    if (!migrate) {
+      skipNewAgentsMd = true;
+      info('Keeping legacy .agent/rules/agents.md. Will not pull root AGENTS.md.');
+    } else {
+      blank();
+      warn('Please manually copy your custom rules from .agent/rules/agents.md to the new root AGENTS.md');
+      warn('After copying, you can safely delete the old .agent/rules/agents.md file.');
+      blank();
+    }
+  }
+
   const updated = [];
   const skipped = [];
 
   for (const rel of MANAGED_FILES) {
+    if (skipNewAgentsMd && rel === 'AGENTS.md') {
+      continue;
+    }
+
     if (USER_PROTECTED_FILES.includes(rel)) {
       skipped.push(rel);
       continue;
@@ -68,29 +91,18 @@ async function update() {
     }
   }
 
-  // 检查 agents.md 模板是否有变更，提供 .new 文件供用户合并
-  const agentsMerged = await checkAgentsTemplate(cwd, srcRoot);
-
   blank();
   success(`Done! ${updated.length} file(s) updated${skipped.length > 0 ? `, ${skipped.length} skipped` : ''}.`);
   info('Managed files have been updated to the latest version.');
   info('Your custom files in .agent/ were not touched.');
-
-  if (agentsMerged) {
-    blank();
-    warn('AGENTS.md template has changed!');
-    info('A new template has been saved to:');
-    info('  AGENTS.md.new');
-    blank();
-    info('Please review and merge the changes into your AGENTS.md.');
-    info('After merging, delete AGENTS.md.new.');
-  }
 }
 
 /**
  * 交互式确认更新操作（默认 N）。
  */
 async function askUpdate() {
+  if (global.__ANWS_FORCE_YES) return true;
+
   if (!process.stdin.isTTY) {
     warn('Non-TTY environment detected. Skipping update to avoid accidental overwrites.');
     return false;
@@ -111,43 +123,27 @@ async function askUpdate() {
 }
 
 /**
- * 检查 AGENTS.md 模板是否相比上次安装/更新有变化。
- * 用 hash 文件记录上次模板指纹，与新模板比较。
- * 如果有变化 → 写入 AGENTS.md.new + 更新 hash。
- *
- * @param {string} cwd       项目根目录
- * @param {string} srcRoot   模板 .agent/ 目录
- * @returns {Promise<boolean>} 是否产生了 .new 文件
+ * 询问用户是否同意迁移 agents.md
  */
-async function checkAgentsTemplate(cwd, srcRoot) {
-  const templatePath = path.join(path.dirname(srcRoot), 'AGENTS.md');
-  const hashPath = path.join(cwd, '.agents-template-hash');
-  const newPath = path.join(cwd, 'AGENTS.md.new');
+async function askMigrate() {
+  if (global.__ANWS_FORCE_YES) return true;
 
-  const templateExists = await fs.access(templatePath).then(() => true).catch(() => false);
-  if (!templateExists) return false;
-
-  const templateContent = await fs.readFile(templatePath, 'utf-8');
-  const newHash = crypto.createHash('md5').update(templateContent).digest('hex');
-
-  // 读取上次存储的 hash
-  let oldHash = null;
-  try {
-    oldHash = (await fs.readFile(hashPath, 'utf-8')).trim();
-  } catch {
-    // hash 文件不存在（首次 update 或旧版本安装）
+  if (!process.stdin.isTTY) {
+    return false;
   }
 
-  if (oldHash === newHash) {
-    return false; // 模板没变化
-  }
+  const readline = require('node:readline');
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 
-  // 模板有变化 → 写入 .new 供用户合并
-  await fs.writeFile(newPath, templateContent, 'utf-8');
-  // 更新 hash 记录
-  await fs.writeFile(hashPath, newHash, 'utf-8');
-
-  return true;
+  return new Promise((resolve) => {
+    rl.question(
+      '\n\u26a0 Legacy .agent/rules/agents.md detected. Do you want to migrate to root AGENTS.md? [y/N] ',
+      (answer) => {
+        rl.close();
+        resolve(answer.trim().toLowerCase() === 'y');
+      }
+    );
+  });
 }
 
 module.exports = update;

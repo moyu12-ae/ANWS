@@ -124,7 +124,7 @@ $ anws init
 
 ✔ Initializing Antigravity Workflow System...
 
-  .agent/rules/agents.md
+  AGENTS.md
   .agent/workflows/genesis.md
   .agent/workflows/blueprint.md
   .agent/workflows/forge.md
@@ -133,7 +133,7 @@ $ anws init
 ✔ Done! 9 files written to .agent/
 
   Next steps:
-    1. Read .agent/rules/agents.md to understand the system
+    1. Read AGENTS.md to understand the system
     2. Run /genesis to start a new project
 ```
 

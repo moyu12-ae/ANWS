@@ -183,7 +183,7 @@ graph TD
   - **验收标准**:
     - [ ] `templates/.agent/workflows/` 包含所有工作流文件 (genesis.md, blueprint.md, forge.md 等)
     - [ ] `templates/.agent/skills/` 包含所有技能目录
-    - [ ] `templates/.agent/rules/agents.md` 存在（内容为模板版本，非当前项目状态）
+    - [ ] `templates/AGENTS.md` 存在（内容为模板版本，非当前项目状态）
     - [ ] 文件总数与源 `.agent/` 一致
   - **验证说明**: 比对 `templates/.agent/` 与源 `.agent/` 的文件列表，确认无遗漏
   - **估时**: 0.5h

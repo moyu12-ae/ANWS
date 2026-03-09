@@ -2,7 +2,6 @@
 
 const fs = require('node:fs/promises');
 const path = require('node:path');
-const crypto = require('node:crypto');
 const { copyDir } = require('./copy');
 const { MANAGED_FILES, USER_PROTECTED_FILES } = require('./manifest');
 const { success, warn, info, fileLine, skippedLine, blank, logo } = require('./output');
@@ -26,7 +25,6 @@ async function init() {
     }
     // 仅覆盖托管文件（用户自有文件不受影响）
     const { written: updated, skipped } = await overwriteManaged(srcRoot, cwd);
-    await storeAgentsTemplateHash(srcRoot, cwd);
     printSummary(updated, skipped, 'updated');
     return;
   }
@@ -48,9 +46,6 @@ async function init() {
   } catch (e) {
     // 忽略
   }
-
-  // 存储 AGENTS.md 模板指纹，供后续 update 检测模板变化
-  await storeAgentsTemplateHash(srcRoot, cwd);
 
   // 打印文件列表
   for (const absPath of written) {
@@ -85,6 +80,8 @@ async function findConflicts(cwd) {
  * @returns {Promise<boolean>}
  */
 async function askOverwrite(count) {
+  if (global.__ANWS_FORCE_YES) return true;
+
   // 非 TTY 环境：默认不覆盖，防止 CI 挂起
   if (!process.stdin.isTTY) {
     warn(`${count} managed file(s) already exist. Non-TTY: skipping overwrite.`);
@@ -173,25 +170,6 @@ function printNextSteps() {
   info('Next steps:');
   info('  1. Read AGENTS.md to understand the system');
   info('  2. Run /quickstart in your AI assistant to analyze and start the workflow');
-}
-
-/**
- * 存储 AGENTS.md 模板的 MD5 指纹。
- * 供 `anws update` 检测模板是否在版本间发生了变化。
- * @param {string} srcRoot  模板 .agent/ 目录绝对路径
- * @param {string} cwd      项目根目录
- */
-async function storeAgentsTemplateHash(srcRoot, cwd) {
-  const templatePath = path.join(path.dirname(srcRoot), 'AGENTS.md');
-  const hashPath = path.join(cwd, '.agents-template-hash');
-
-  try {
-    const content = await fs.readFile(templatePath, 'utf-8');
-    const hash = crypto.createHash('md5').update(content).digest('hex');
-    await fs.writeFile(hashPath, hash, 'utf-8');
-  } catch {
-    // 模板文件不存在时静默失败（不应该发生）
-  }
 }
 
 module.exports = init;
