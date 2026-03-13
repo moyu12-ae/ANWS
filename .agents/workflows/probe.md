@@ -12,8 +12,8 @@ description: 探测系统风险、隐藏耦合和架构暗坑，通过 PROBE 协
 探测结果将作为**输入**反馈给 Architectural Overview。
 
 **核心能力**：
-- 调用 `nexus-mapper` 执行 PROBE 五阶段协议
-- 调用 `build-inspector`、`runtime-inspector`、`git-forensics` 进行专项分析
+- 调用 `nexus-mapper` 执行完整 PROBE 五阶段协议
+- 调用 `runtime-inspector` 补充进程边界分析
 - 产出风险矩阵和 Gap Analysis
 
 **你的限制**：
@@ -46,50 +46,38 @@ description: 探测系统风险、隐藏耦合和架构暗坑，通过 PROBE 协
 
 ---
 
-## Step 1: 系统指纹 (PROFILE)
+## Step 1: 执行 nexus-mapper PROBE 协议
 
-**目标**: 建立项目基础认知。
+**目标**: 完成项目深度探测，产出 `.nexus-map/` 知识库。
 
 > [!IMPORTANT]
-> 你**必须**先调用 `nexus-mapper` 获取项目结构全貌。
+> 你**必须**调用 `nexus-mapper` 执行完整的 PROBE 五阶段协议。
 >
-> **为什么？** 没有全局视角的探测是盲人摸象。
+> **为什么？** nexus-mapper 已整合了构建拓扑、Git 热点、领域概念分析能力，一次调用即可获得完整的项目认知。
 
-**调用技能**: `nexus-mapper` (PROFILE 阶段)
+**调用技能**: `nexus-mapper`
 
-**思考引导**:
-1. "项目使用哪些语言？主要技术栈是什么？"
-2. "目录结构反映了什么架构风格？"
-3. "有没有明显的边界划分？"
+**nexus-mapper 内置能力**:
+- **PROFILE**: AST 提取、文件树、语言覆盖
+- **REASON**: 构建拓扑、依赖分析（原 build-inspector 功能）
+- **OBJECT**: 质疑验证、三维度分析
+- **BENCHMARK**: Git 热点、耦合对分析（原 git-forensics 功能）
+- **EMIT**: 概念模型、知识库生成（原 concept-modeler 功能）
 
-**输出**: 项目结构概览
-
----
-
-## Step 2: 构建拓扑 (REASON)
-
-**目标**: 识别项目的构建边界和依赖关系。
-
-**调用技能**: `build-inspector`
-
-**思考引导**:
-1. "项目是单体、工作区还是多仓库？"
-2. "核心依赖节点是哪些？(高 fan-in/fan-out)"
-3. "有没有跨根依赖风险？"
-
-**输出**: Build Roots 列表 + 拓扑类型
+**输出**: `.nexus-map/` 目录，包含：
+- `INDEX.md` — AI 冷启动入口
+- `arch/systems.md` — 系统边界
+- `arch/dependencies.md` — Mermaid 依赖图
+- `concepts/concept_model.json` — 机器可读概念模型
+- `hotspots/git_forensics.md` — Git 热点分析
 
 ---
 
-## Step 3: 运行时拓扑 (OBJECT)
+## Step 2: 补充运行时拓扑分析
 
-**目标**: 追踪进程间通信和契约状态。
+**目标**: 追踪进程间通信和契约状态（nexus-mapper 不覆盖此领域）。
 
 **调用技能**: `runtime-inspector`
-
-**质疑验证** (OBJECT 核心):
-- 提出至少 3 个有证据线索的质疑
-- 每个质疑必须可验证
 
 **思考引导**:
 1. "进程边界在哪里？通信协议是什么？"
@@ -100,45 +88,26 @@ description: 探测系统风险、隐藏耦合和架构暗坑，通过 PROBE 协
 
 ---
 
-## Step 4: 历史耦合 (BENCHMARK)
+## Step 3: Gap Analysis (模式 B)
 
-**目标**: 从 Git 历史发现隐藏的耦合关系。
+**目标**: 对比代码实现与架构文档的偏差。
 
-**调用技能**: `git-forensics`
+> [!IMPORTANT]
+> 仅在 `genesis/v{N}/` 存在时执行此步骤。
 
-**验证质疑**:
-- 验证 Step 3 提出的质疑
-- 标记已验证/已推翻
-
-**思考引导**:
-1. "哪些文件总是被一起修改？(耦合对)"
-2. "热点模块在哪里？(高 Churn × 高 Complexity)"
-3. "有没有孤儿文件或跨根耦合？"
-
-**输出**: Coupling Pairs + Hotspots
-
----
-
-## Step 5: 领域概念 (EMIT)
-
-**目标**: 提取代码中的隐式概念，进行 Gap Analysis。
-
-**调用技能**: `nexus-mapper` (EMIT 阶段)
-
-**Gap Analysis** (模式 B):
-- 将代码中的概念与 `genesis/v{N}/` 中的架构定义对比
+**Gap Analysis 内容**:
+- 将 `.nexus-map/concepts/concept_model.json` 与 `genesis/v{N}/` 中的架构定义对比
 - 识别文档与实现的偏差
+- 标记概念漂移或隐式设计
 
 **思考引导**:
 1. "代码中实际存在哪些领域概念？"
 2. "与架构文档描述是否一致？"
 3. "有没有概念漂移或隐式设计？"
 
-**输出**: 概念模型 + Gap 分析
-
 ---
 
-## Step 6: 风险矩阵
+## Step 4: 风险矩阵
 
 **目标**: 综合分析，识别 "Change Impact"。
 
@@ -151,7 +120,7 @@ description: 探测系统风险、隐藏耦合和架构暗坑，通过 PROBE 协
 
 ---
 
-## Step 7: 生成报告
+## Step 5: 生成报告
 
 **目标**: 保存探测报告。
 
