@@ -1,0 +1,59 @@
+'use strict';
+
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs/promises');
+const os = require('node:os');
+const path = require('node:path');
+const { spawnSync } = require('node:child_process');
+
+const cliPath = path.join(__dirname, '..', 'bin', 'cli.js');
+
+async function withTempDir(run) {
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'anws-init-'));
+  try {
+    await run(tempDir);
+  } finally {
+    await fs.rm(tempDir, { recursive: true, force: true });
+  }
+}
+
+function runCliInDir(cwd, args) {
+  return spawnSync(process.execPath, [cliPath, ...args], {
+    cwd,
+    encoding: 'utf8',
+    stdio: ['pipe', 'pipe', 'pipe']
+  });
+}
+
+async function exists(targetPath) {
+  try {
+    await fs.access(targetPath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+test('anws init --target windsurf writes only the windsurf projection', async () => {
+  await withTempDir(async (tempDir) => {
+    const result = runCliInDir(tempDir, ['init', '--target', 'windsurf']);
+
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+    assert.equal(await exists(path.join(tempDir, '.windsurf', 'workflows', 'genesis.md')), true);
+    assert.equal(await exists(path.join(tempDir, '.windsurf', 'skills', 'spec-writer', 'SKILL.md')), true);
+    assert.equal(await exists(path.join(tempDir, 'AGENTS.md')), false);
+    assert.equal(await exists(path.join(tempDir, '.agents')), false);
+  });
+});
+
+test('anws init --target antigravity writes .agents and AGENTS.md', async () => {
+  await withTempDir(async (tempDir) => {
+    const result = runCliInDir(tempDir, ['init', '--target', 'antigravity']);
+
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+    assert.equal(await exists(path.join(tempDir, '.agents', 'workflows', 'genesis.md')), true);
+    assert.equal(await exists(path.join(tempDir, '.agents', 'skills', 'spec-writer', 'SKILL.md')), true);
+    assert.equal(await exists(path.join(tempDir, 'AGENTS.md')), true);
+  });
+});
