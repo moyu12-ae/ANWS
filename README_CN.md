@@ -18,6 +18,13 @@
 
 > 💡 **一句话总结**: 别再让 AI 写“意大利面条代码”了。强迫它先像架构师一样思考，再像工程师一样编码。
 
+### ANWS
+
+**Axiom —— 先有原则，再有实现。**  
+**Nexus —— 先理解连接，再拆分系统。**  
+**Weave —— 先形成整体，再展开流程。**  
+**Sovereignty —— 始终由人保有判断与主导权，AI 只是工具，不是权威。**
+
 **支持工具**: Claude Code、GitHub Copilot、Cursor、Windsurf。
 
 ### 🎯 我们解决的问题
@@ -54,8 +61,13 @@ cd your-project
 anws update
 ```
 
-> `anws update` 会覆盖所有托管的工作流/技能文件至最新版本，同时**保留**你现有的 `AGENTS.md` 不被覆盖。
+> `anws update --check` 会先输出文件级和内容级 diff 预览，**不会写入任何文件**。
+> `anws update` 会把托管的工作流/技能文件更新到最新版本，并按规则处理 `AGENTS.md`：
+> - 带标识的 `AGENTS.md` → 更新稳定区，保留 `AUTO` 运行态区块
+> - 可识别的 legacy `AGENTS.md` → 迁移到新的带标识结构
+> - 不可识别的 legacy `AGENTS.md` → 警告并原样保留
 > 如果项目里仍有旧版 `.agent/` 目录，CLI 会询问你是否迁移到 `.agents/`。
+> legacy 迁移成功后，在交互模式下 CLI 还会进一步询问你是否删除旧 `.agent/` 目录。
 
 ### 你的第一个项目 🐣
 
@@ -125,14 +137,14 @@ anws update
 ### 1. 版本化架构 (Versioned Architecture)
 > 不要“修补”架构文档，要**演进**它们。
 
-- 发生重大变更时，从 `genesis/v1` 复制到 `genesis/v2`。
+- 发生重大变更时，从 `.anws/v1` 复制到 `.anws/v2`。
 - 完整的决策可追溯性。
 - 拒绝“本来就是这样”的玄学代码。
 
 ### 2. 深度思考优先 (Deep Thinking First)
 > AI 必须先思考，再动笔。
 
-- 工作流通过 `sequentialthinking` 强制进行多步推理。
+- 工作流通过内置的 `sequential-thinking` skill 强制进行多步推理。
 - 使用 `[!IMPORTANT]` 块作为护栏。
 - 拒绝肤浅的、扫描式的快速回答。
 
@@ -176,16 +188,15 @@ anws update
 
 **工作原理**: Anws 使用 `AGENTS.md` 作为通用锚点。各工具读取此文件来理解项目上下文和工作流位置。`.agents/` 目录包含可被发现和执行的工作流与技能。
 
-### 🔌 必装: Sequential Thinking MCP Server
+### ✅ 内置深度推理支持
 
-本框架使用 `sequentialthinking` 实现深度推理。请通过你所用工具的 MCP Store 安装:
+本框架已内置 `sequential-thinking` skill，用于结构化深度推理。
 
-- **Windsurf**: 设置 → MCP Servers → 添加 `sequential-thinking`
-- **Claude Code**: 添加到 `.claude/settings.json` 或使用 MCP 安装器
-- **Cursor**: 设置 → MCP → 添加 `sequential-thinking`
-- **Copilot**: 通过 VS Code 扩展
+- 默认推理主链路**不再依赖**额外的 MCP 安装
+- 所有工作流和 skills 统一使用 `sequential-thinking` 调用口径
+- 内置示例覆盖修正推理、分支推理与结构化影响分析
 
-> 💡 未安装时工作流仍可运行，但深度思考功能会受限。
+> 💡 框架默认推理流程已不再依赖旧版 Sequential Thinking MCP Server。
 
 ---
 
@@ -234,7 +245,7 @@ your-project/
 │       ├── nexus-mapper/     # 代码库知识映射
 │       └── ...
 │
-└── genesis/               # 版本化的架构文档
+└── .anws/                 # 版本化的架构文档
     ├── v1/
     │   ├── 01_PRD.md
     │   ├── 02_ARCHITECTURE.md

@@ -16,14 +16,121 @@ const useColor =
   !process.env.NO_COLOR &&
   process.env.TERM !== 'dumb';
 
+const PALETTE = {
+  ink: [242, 244, 246],
+  muted: [159, 166, 174],
+  brand: [127, 181, 182],
+  frost: [242, 244, 246],
+  deep: [31, 34, 38],
+};
+
 // ─── ANSI 转义码 ──────────────────────────────────────────────────────────────
 const c = {
+  brand:  useColor ? '\x1b[38;2;127;181;182m' : '',
+  ink:    useColor ? '\x1b[38;2;242;244;246m' : '',
+  muted:  useColor ? '\x1b[38;2;159;166;174m' : '',
   green:  useColor ? '\x1b[32m' : '',
   yellow: useColor ? '\x1b[33m' : '',
   red:    useColor ? '\x1b[31m' : '',
   dim:    useColor ? '\x1b[2m'  : '',
   reset:  useColor ? '\x1b[0m'  : '',
 };
+
+function mixRgb(start, end, ratio) {
+  return [
+    Math.round(start[0] + (end[0] - start[0]) * ratio),
+    Math.round(start[1] + (end[1] - start[1]) * ratio),
+    Math.round(start[2] + (end[2] - start[2]) * ratio),
+  ];
+}
+
+function colorRgb(rgb) {
+  return useColor ? `\x1b[38;2;${rgb[0]};${rgb[1]};${rgb[2]}m` : '';
+}
+
+function visibleLength(text) {
+  return String(text).replace(/\x1b\[[0-9;]*m/g, '').length;
+}
+
+function mixStops(stops, ratio) {
+  if (stops.length === 0) return [255, 255, 255];
+  if (stops.length === 1) return stops[0];
+
+  const clamped = Math.max(0, Math.min(1, ratio));
+  const scaled = clamped * (stops.length - 1);
+  const leftIndex = Math.floor(scaled);
+  const rightIndex = Math.min(stops.length - 1, leftIndex + 1);
+  const localRatio = scaled - leftIndex;
+  return mixRgb(stops[leftIndex], stops[rightIndex], localRatio);
+}
+
+function stylizeAsciiLine(text, rowIndex, rowCount) {
+  if (!useColor) return text;
+
+  const rowRatio = rowCount <= 1 ? 0 : rowIndex / (rowCount - 1);
+  const softenedTop = Math.pow(rowRatio, 1.12);
+  const rowBase = mixStops(
+    [PALETTE.deep, PALETTE.brand, PALETTE.muted, PALETTE.ink],
+    0.08 + softenedTop * 0.8
+  );
+  const center = text.length / 2;
+
+  let output = '';
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+    if (char === ' ') {
+      output += char;
+      continue;
+    }
+
+    const distance = Math.abs(index - center) / Math.max(1, center);
+    const highlight = Math.max(0, 1 - distance);
+    const horizontalRatio = text.length <= 1 ? 0 : index / (text.length - 1);
+    const sweep = mixStops(
+      [PALETTE.deep, PALETTE.brand, PALETTE.frost, PALETTE.muted, PALETTE.ink],
+      horizontalRatio
+    );
+    const brandLift = mixRgb(rowBase, PALETTE.brand, 0.14 + highlight * 0.16);
+    const cooled = mixRgb(brandLift, sweep, 0.4 + highlight * 0.18);
+    const lowerGlow = Math.max(0, rowRatio - 0.58) / 0.42;
+    const tone = mixRgb(cooled, PALETTE.ink, 0.02 + highlight * 0.16 + lowerGlow * 0.16);
+    output += `${colorRgb(tone)}${char}`;
+  }
+
+  return output + c.reset;
+}
+
+function centerLine(text, width) {
+  const length = visibleLength(text);
+  if (!width || length >= width) return text;
+  const leftPad = Math.max(0, Math.floor((width - length) / 2));
+  return `${' '.repeat(leftPad)}${text}`;
+}
+
+function stylizeTagline(text) {
+  if (!useColor) return text;
+
+  let output = '';
+  const length = text.length;
+  for (let index = 0; index < length; index += 1) {
+    const char = text[index];
+    if (char === ' ') {
+      output += char;
+      continue;
+    }
+
+    const ratio = length <= 1 ? 0 : index / (length - 1);
+    const wave = Math.abs(ratio - 0.5) * 2;
+    const base = mixStops(
+      [PALETTE.deep, PALETTE.brand, PALETTE.muted, PALETTE.ink],
+      ratio
+    );
+    const tone = mixRgb(base, PALETTE.ink, 0.08 + (1 - wave) * 0.18);
+    output += `${colorRgb(tone)}${char}`;
+  }
+
+  return output + c.reset;
+}
 
 // ─── 公共输出函数 ─────────────────────────────────────────────────────────────
 
@@ -64,16 +171,26 @@ function blank() {
 
 /** 打印 ASCII Logo */
 function logo() {
-  const art = `
-    ___    _   ___      _______
-   /   |  / | / / | /| / / ___/
-  / /| | /  |/ /| |/ |/ /\\__ \\ 
- / ___ |/ /|  / |  /|  /___/ / 
-/_/  |_/_/ |_/  |__/|__//____/ 
-  `;
-  const cyan = useColor ? '\x1b[36m' : '';
-  const reset = useColor ? '\x1b[0m' : '';
-  console.log(`${cyan}${art}${reset}`);
+  const terminalWidth = Number.isInteger(process.stdout.columns) ? process.stdout.columns : 0;
+  const art = [
+    '█████╗ ███╗   ██╗██╗    ██╗███████╗',
+    '██╔══██╗████╗  ██║██║    ██║██╔════╝',
+    '███████║██╔██╗ ██║██║ █╗ ██║███████╗',
+    '██╔══██║██║╚██╗██║██║███╗██║╚════██║',
+    '██║  ██║██║ ╚████║╚███╔███╔╝███████║',
+    '╚═╝  ╚═╝╚═╝  ╚═══╝ ╚══╝╚══╝ ╚══════╝',
+  ];
+  const title = art
+    .map((line, index, lines) => {
+      const centered = centerLine(line, terminalWidth);
+      return useColor ? stylizeAsciiLine(centered, index, lines.length) : centered;
+    })
+    .join('\n');
+  const taglineText = centerLine('‹ Axiom · Nexus · Weave · Sovereignty ›', terminalWidth);
+  const tagline = useColor ? stylizeTagline(taglineText) : taglineText;
+
+  console.log(title);
+  console.log(tagline);
 }
 
 module.exports = { success, warn, error, info, fileLine, skippedLine, blank, logo, c };

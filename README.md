@@ -18,6 +18,13 @@
 
 > 💡 **TL;DR**: Stop letting AI write spaghetti code. Force it to think like an architect first.
 
+### ANWS
+
+**Axiom — principle before implementation.**  
+**Nexus — connection before fragmentation.**  
+**Weave — coherence before accumulation.**  
+**Sovereignty — human judgment before automation.**
+
 **Works with**: Claude Code, GitHub Copilot, Cursor, Windsurf.
 
 ### 🎯 Problems We Solve
@@ -54,8 +61,13 @@ cd your-project
 anws update
 ```
 
-> `anws update` overwrites all managed workflow/skill files to the latest version while **preserving** your existing `AGENTS.md`.
+> `anws update --check` prints file-level and content-level diff previews without writing files.
+> `anws update` overwrites managed workflow/skill files to the latest version, and handles `AGENTS.md` via merge / migrate / skip rules:
+> - marker-based `AGENTS.md` → update stable sections while preserving the `AUTO` block
+> - recognized legacy `AGENTS.md` → migrate into the new marker-based structure
+> - unrecognized legacy `AGENTS.md` → warn and preserve unchanged
 > If your project still has a legacy `.agent/` directory, the CLI will ask whether to migrate to `.agents/`.
+> After a successful legacy migration in interactive mode, the CLI can also ask whether to delete the old `.agent/` directory.
 
 ### Your First Project 🐣
 
@@ -125,14 +137,14 @@ We used the `/genesis` workflow to design the CLI's architecture, and the `/forg
 ### 1. Versioned Architecture
 > Don't "fix" architecture docs. **Evolve** them.
 
-- `genesis/v1` → `genesis/v2` on major changes
+- `.anws/v1` → `.anws/v2` on major changes
 - Full traceability of decisions
 - No "it was always like this" mystery
 
 ### 2. Deep Thinking First
 > AI must think before it writes.
 
-- Workflows force multi-step reasoning via `sequentialthinking`
+- Workflows force multi-step reasoning via the built-in `sequential-thinking` skill
 - `[!IMPORTANT]` blocks as guardrails
 - No shallow, scan-and-output responses
 
@@ -176,16 +188,15 @@ We used the `/genesis` workflow to design the CLI's architecture, and the `/forg
 
 **How it works**: Anws uses `AGENTS.md` as the universal anchor point. Each tool reads this file to understand project context and workflow locations. The `.agents/` directory contains workflows and skills that can be discovered and executed.
 
-### 🔌 Required: Sequential Thinking MCP Server
+### ✅ Built-in Deep Reasoning Support
 
-This framework uses `sequentialthinking` for deep reasoning. Install it via your tool's MCP Store:
+This framework includes a built-in `sequential-thinking` skill for structured deep reasoning.
 
-- **Windsurf**: Settings → MCP Servers → Add `sequential-thinking`
-- **Claude Code**: Add to `.claude/settings.json` or use MCP installer
-- **Cursor**: Settings → MCP → Add `sequential-thinking`
-- **Copilot**: Via VS Code extensions
+- No separate MCP installation is required for the core reasoning path
+- Workflows and skills now use a unified `sequential-thinking` calling convention
+- The built-in examples cover revision, branching, and structured impact analysis
 
-> 💡 Without this, workflows still work, but deep thinking features will be limited.
+> 💡 The framework no longer depends on the legacy Sequential Thinking MCP server for its default reasoning flow.
 
 ---
 
@@ -234,7 +245,7 @@ your-project/
 │       ├── nexus-mapper/     # Codebase knowledge mapping
 │       └── ...
 │
-└── genesis/               # Versioned architecture docs
+└── .anws/                 # Versioned architecture docs
     ├── v1/
     │   ├── 01_PRD.md
     │   ├── 02_ARCHITECTURE.md
