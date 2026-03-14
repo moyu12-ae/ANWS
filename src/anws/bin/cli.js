@@ -3,10 +3,12 @@
 
 const { parseArgs } = require('node:util');
 const path = require('node:path');
+const { listTargets, getTarget } = require('../lib/adapters');
 const { blank, error, info, logo } = require('../lib/output');
 
 // ─── 版本号从 package.json 读取 ─────────────────────────────────────────────
 const { version } = require(path.join(__dirname, '..', 'package.json'));
+const TARGET_IDS = listTargets().map((target) => target.id);
 
 // ─── 帮助文本 ─────────────────────────────────────────────────────────────────
 const HELP = `
@@ -20,10 +22,12 @@ COMMANDS
 OPTIONS
   -v, --version   Print version number
   -h, --help      Show this help message
+  --target        Target AI IDE for \`init\` (${TARGET_IDS.join(', ')})
   --check         Preview update diff without writing files
 
 EXAMPLES
   anws init          # Choose a target IDE and set up its workflow system
+  anws init --target windsurf
   anws update        # Update the currently installed target projection
   anws update --check
 `.trimStart();
@@ -35,6 +39,7 @@ const { values, positionals } = parseArgs({
     version: { type: 'boolean', short: 'v', default: false },
     help:    { type: 'boolean', short: 'h', default: false },
     yes:     { type: 'boolean', short: 'y', default: false },
+    target:  { type: 'string' },
     check:   { type: 'boolean', default: false },
   },
   strict: false,
@@ -43,6 +48,11 @@ const { values, positionals } = parseArgs({
 
 if (values.yes) {
   global.__ANWS_FORCE_YES = true;
+}
+
+if (values.target !== undefined) {
+  getTarget(values.target);
+  global.__ANWS_TARGET_ID = values.target;
 }
 
 // ─── 命令路由 ─────────────────────────────────────────────────────────────────
