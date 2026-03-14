@@ -57,3 +57,15 @@ test('anws init --target antigravity writes .agents and AGENTS.md', async () => 
     assert.equal(await exists(path.join(tempDir, 'AGENTS.md')), true);
   });
 });
+
+test('anws init rejects installing a second target layout into the same project', async () => {
+  await withTempDir(async (tempDir) => {
+    const firstInstall = runCliInDir(tempDir, ['init', '--target', 'windsurf']);
+    assert.equal(firstInstall.status, 0, firstInstall.stderr || firstInstall.stdout);
+
+    const secondInstall = runCliInDir(tempDir, ['init', '--target', 'antigravity']);
+
+    assert.notEqual(secondInstall.status, 0);
+    assert.match(secondInstall.stderr + secondInstall.stdout, /single installed target layout per project/i);
+  });
+});

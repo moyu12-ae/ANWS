@@ -7,7 +7,7 @@ const {
   buildProjectionEntries,
   buildUserProtectedFiles
 } = require('./manifest');
-const { detectInstalledTarget } = require('./adapters');
+const { detectInstalledTargets } = require('./adapters');
 const { planAgentsUpdate, resolveAgentsInstall, printLegacyMigrationWarning, pathExists } = require('./agents');
 const { collectManagedFileDiffs, printPreview } = require('./diff');
 const { detectUpgrade, generateChangelog } = require('./changelog');
@@ -19,7 +19,17 @@ async function update(options = {}) {
   const check = !!options.check;
   const legacyAgentDir = path.join(cwd, '.agent');
   const { version } = require(path.join(__dirname, '..', 'package.json'));
-  const installedTarget = await detectInstalledTarget(cwd);
+  const installedTargets = await detectInstalledTargets(cwd);
+  const installedTarget = installedTargets[0] || null;
+
+  if (installedTargets.length > 1) {
+    logo();
+    blank();
+    error(`Multiple managed target layouts detected: ${installedTargets.map((item) => item.label).join(', ')}.`);
+    info('anws update currently supports a single installed target layout per project.');
+    info('Please remove the extra target layouts before running update.');
+    process.exit(1);
+  }
 
   const legacyAgentExists = await pathExists(legacyAgentDir);
   const isLegacyMigration = !installedTarget && legacyAgentExists;

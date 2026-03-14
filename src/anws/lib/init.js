@@ -3,11 +3,11 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const { buildManagedFiles, buildProjectionEntries, buildUserProtectedFiles } = require('./manifest');
-const { getTarget, listTargets } = require('./adapters');
+const { detectInstalledTargets, getTarget, listTargets } = require('./adapters');
 const { resolveAgentsInstall, printLegacyMigrationWarning, pathExists } = require('./agents');
 const { ensureChangelogDir } = require('./changelog');
 const { ROOT_AGENTS_FILE, resolveCanonicalSource } = require('./resources');
-const { success, warn, info, fileLine, skippedLine, blank, logo } = require('./output');
+const { success, warn, error, info, fileLine, skippedLine, blank, logo } = require('./output');
 
 /**
  * anws init — 将工作流系统写入当前项目
@@ -15,6 +15,26 @@ const { success, warn, info, fileLine, skippedLine, blank, logo } = require('./o
 async function init() {
   const cwd = process.cwd();
   const target = await selectTarget();
+  const installedTargets = await detectInstalledTargets(cwd);
+  const conflictingTargets = installedTargets.filter((item) => item.id !== target.id);
+
+  if (conflictingTargets.length > 0) {
+    logo();
+    blank();
+    error(`This project already contains another managed target: ${conflictingTargets.map((item) => item.label).join(', ')}.`);
+    info(`anws currently supports a single installed target layout per project. Refusing to install ${target.label} on top of an existing target.`);
+    info('Please remove the existing target layout first, or run `anws update` for the installed target.');
+    process.exit(1);
+  }
+
+  if (installedTargets.length > 1) {
+    logo();
+    blank();
+    error(`Multiple managed target layouts detected: ${installedTargets.map((item) => item.label).join(', ')}.`);
+    info('anws currently supports a single installed target layout per project. Please clean up the conflicting layouts before continuing.');
+    process.exit(1);
+  }
+
   const managedFiles = buildManagedFiles(target.id);
   const protectedFiles = buildUserProtectedFiles(target.id);
   const projectionEntries = buildProjectionEntries(target.id);

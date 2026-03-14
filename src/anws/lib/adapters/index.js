@@ -86,20 +86,29 @@ async function pathExists(targetPath) {
 }
 
 async function detectInstalledTarget(cwd) {
+  const targets = await detectInstalledTargets(cwd);
+  return targets[0] || null;
+}
+
+async function detectInstalledTargets(cwd) {
+  const installedTargets = [];
+
   for (const target of listTargets()) {
     for (const relPath of target.detect) {
       if (await pathExists(path.join(cwd, relPath))) {
-        return target;
+        installedTargets.push(target);
+        break;
       }
     }
   }
 
-  return null;
+  return installedTargets;
 }
 
 module.exports = {
   TARGETS,
   detectInstalledTarget,
+  detectInstalledTargets,
   getTarget,
   listTargets
 };
