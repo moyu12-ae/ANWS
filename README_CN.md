@@ -49,7 +49,9 @@ anws init
 ```
 
 > 需要 Node.js ≥ 18。
-> `anws init` 会先让你选择目标 AI IDE，然后只安装该目标所需的托管文件。
+> `anws init` 支持显式安装一个或多个目标 AI IDE 投影。
+> 示例：`anws init --target windsurf,codex`
+> 每个已选择 target 都会落到自己的原生目录中，目标之间不会共享物理文件。
 
 ### 方式 B — GitHub Release
 
@@ -62,13 +64,16 @@ cd your-project
 anws update
 ```
 
-> `anws update --check` 会先输出文件级和内容级 diff 预览，**不会写入任何文件**。
-> `anws update` 会先识别当前项目已安装的目标 IDE 投影，只更新该目标的托管文件；当目标为 `Antigravity` 时，仍会按规则处理 `AGENTS.md`：
+> `anws update --check` 会按 target 分组输出 diff 预览，**不会写入任何文件，也不会更新 `.anws/install-lock.json`**。
+> `anws update` 会优先读取 `.anws/install-lock.json` 来确定当前已安装 targets；如果 lock 缺失或损坏，则回退为目录扫描。
+> 当项目中存在多个 targets 时，`anws update` 会统一调度全部命中 targets，并输出按 target 分组的成功 / 失败摘要。成功 target 会回写到 lock，失败 target 会被单独报告，不会误记为已更新。
+> 当命中目标中包含 `Antigravity` 时，`AGENTS.md` 仍按以下规则处理：
 > - 带标识的 `AGENTS.md` → 更新稳定区，保留 `AUTO` 运行态区块
 > - 可识别的 legacy `AGENTS.md` → 迁移到新的带标识结构
 > - 不可识别的 legacy `AGENTS.md` → 警告并原样保留
 > 如果项目里仍有旧版 `.agent/` 目录，CLI 会询问你是否迁移到 `.agents/`。
 > legacy 迁移成功后，在交互模式下 CLI 还会进一步询问你是否删除旧 `.agent/` 目录。
+> 每次成功的 `update` 也会刷新 `.anws/changelog/` 并更新 `.anws/install-lock.json` 中的目标状态。
 
 ### 你的第一个项目 🐣
 
@@ -227,33 +232,29 @@ anws update
 
 ```bash
 your-project/
-├── .anws/                 # 版本化的架构文档
-│   ├── v1/
-│   │   ├── 01_PRD.md
-│   │   ├── 02_ARCHITECTURE.md
-│   │   ├── 03_ADR/
-│   │   ├── 05_TASKS.md
-│   │   └── 07_CHALLENGE_REPORT.md
-│   └── v2/                # 重大变更时的新版本
+├── .anws/
+│   ├── install-lock.json      # 已安装 target 的权威状态
+│   ├── changelog/             # `anws update` 生成的升级记录
+│   └── v6/                    # 当前版本化架构文档
 │
-├── .windsurf/             # 目标示例：Windsurf
+├── .windsurf/                 # Windsurf 投影
 │   ├── workflows/
 │   └── skills/
-│
-├── .agents/               # 目标示例：Antigravity
+├── .agents/                   # Antigravity 投影
 │   ├── workflows/
 │   └── skills/
-├── AGENTS.md              # Antigravity 目标的根锚点
-│
-├── .cursor/commands/      # 目标示例：Cursor
-├── .claude/commands/      # 目标示例：Claude Code
+├── AGENTS.md                  # 仅 Antigravity 使用的根锚点
+├── .cursor/commands/          # Cursor 投影
+├── .claude/commands/          # Claude Code 投影
 ├── .github/
-│   ├── agents/            # 目标示例：GitHub Copilot
+│   ├── agents/                # GitHub Copilot 投影
 │   └── prompts/
 └── .codex/
-    ├── prompts/           # 目标示例：Codex
+    ├── prompts/               # Codex 投影
     └── skills/
 ```
+
+> Anws 维护统一的 canonical source，再把它投影到多个 target 目录；但每个 target 仍拥有各自独立的物理文件。
 
 ## 🙌 Contributing
 

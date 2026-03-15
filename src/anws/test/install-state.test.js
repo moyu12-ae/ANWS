@@ -153,6 +153,32 @@ test('normalizeInstallLock rejects missing required fields', () => {
   );
 });
 
+test('normalizeInstallLock preserves summary and target metadata for valid payloads', () => {
+  const normalized = normalizeInstallLock({
+    schemaVersion: INSTALL_LOCK_VERSION,
+    cliVersion: '1.3.0',
+    generatedAt: '2026-03-15T10:18:00.000Z',
+    targets: [
+      {
+        targetId: 'claude',
+        targetLabel: 'Claude',
+        installedVersion: '1.3.0',
+        managedFiles: ['.claude/commands/genesis.md'],
+        ownership: ['claude:.claude/commands/genesis.md']
+      }
+    ],
+    lastUpdateSummary: {
+      successfulTargets: ['claude'],
+      failedTargets: ['codex'],
+      updatedAt: '2026-03-15T10:20:00.000Z'
+    }
+  });
+
+  assert.equal(normalized.targets[0].targetId, 'claude');
+  assert.deepEqual(normalized.lastUpdateSummary.successfulTargets, ['claude']);
+  assert.deepEqual(normalized.lastUpdateSummary.failedTargets, ['codex']);
+});
+
 test('detectLockDrift reports missing and untracked targets', () => {
   const drift = detectLockDrift({
     targets: [
@@ -180,5 +206,34 @@ test('detectInstallState falls back to scanned targets when lock is missing', as
     assert.equal(result.needsFallback, true);
     assert.deepEqual(result.selectedTargets, ['windsurf']);
     assert.equal(result.scannedTargets[0].id, 'windsurf');
+  });
+});
+
+test('detectInstallState prefers lock targets while still reporting scan drift', async () => {
+  await withTempDir(async (tempDir) => {
+    const lock = createInstallLock({
+      cliVersion: '1.3.0',
+      generatedAt: '2026-03-15T10:18:00.000Z',
+      targets: [
+        {
+          targetId: 'cursor',
+          targetLabel: 'Cursor',
+          installedVersion: '1.3.0',
+          managedFiles: ['.cursor/commands/genesis.md'],
+          ownership: ['cursor:.cursor/commands/genesis.md']
+        }
+      ]
+    });
+
+    await writeInstallLock(tempDir, lock);
+    await fs.mkdir(path.join(tempDir, '.codex', 'prompts'), { recursive: true });
+
+    const result = await detectInstallState(tempDir);
+
+    assert.equal(result.needsFallback, false);
+    assert.deepEqual(result.selectedTargets, ['cursor']);
+    assert.equal(result.drift.hasDrift, true);
+    assert.deepEqual(result.drift.missingOnDisk, ['cursor']);
+    assert.deepEqual(result.drift.untrackedOnDisk, ['codex']);
   });
 });

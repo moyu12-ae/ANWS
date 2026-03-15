@@ -56,6 +56,13 @@ test('listTargets exposes all supported target contracts', () => {
   assert(targets.every((target) => Array.isArray(target.detect)));
 });
 
+test('listTargets covers the complete first-wave target matrix', () => {
+  assert.deepEqual(
+    listTargets().map((target) => target.id),
+    ['windsurf', 'antigravity', 'cursor', 'claude', 'copilot', 'codex']
+  );
+});
+
 test('getTarget returns copilot projection contract', () => {
   const target = getTarget('copilot');
 
@@ -71,6 +78,17 @@ test('getTarget reports supported targets for unsupported ids', () => {
   );
 });
 
+test('getTarget returns stable detection metadata for all supported targets', () => {
+  for (const target of listTargets()) {
+    const resolved = getTarget(target.id);
+
+    assert.equal(resolved.id, target.id);
+    assert.equal(typeof resolved.rootAgentFile, 'boolean');
+    assert(resolved.detect.length > 0);
+    assert(resolved.detect.every((item) => typeof item === 'string' && item.length > 0));
+  }
+});
+
 test('detectInstalledTargets returns multiple managed layouts when present', async () => {
   await withTempDir(async (tempDir) => {
     await fs.mkdir(path.join(tempDir, '.windsurf', 'workflows'), { recursive: true });
@@ -79,5 +97,23 @@ test('detectInstalledTargets returns multiple managed layouts when present', asy
     const targets = await detectInstalledTargets(tempDir);
 
     assert.deepEqual(targets.map((item) => item.id), ['windsurf', 'codex']);
+  });
+});
+
+test('detectInstalledTargets can distinguish the full supported matrix from directory layout', async () => {
+  await withTempDir(async (tempDir) => {
+    await fs.mkdir(path.join(tempDir, '.windsurf', 'skills'), { recursive: true });
+    await fs.mkdir(path.join(tempDir, '.agents', 'workflows'), { recursive: true });
+    await fs.mkdir(path.join(tempDir, '.cursor', 'commands'), { recursive: true });
+    await fs.mkdir(path.join(tempDir, '.claude', 'commands'), { recursive: true });
+    await fs.mkdir(path.join(tempDir, '.github', 'agents'), { recursive: true });
+    await fs.mkdir(path.join(tempDir, '.codex', 'skills'), { recursive: true });
+
+    const targets = await detectInstalledTargets(tempDir);
+
+    assert.deepEqual(
+      targets.map((item) => item.id),
+      ['windsurf', 'antigravity', 'cursor', 'claude', 'copilot', 'codex']
+    );
   });
 });

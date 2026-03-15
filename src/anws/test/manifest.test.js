@@ -7,10 +7,12 @@ const {
   MANAGED_FILES,
   USER_PROTECTED_FILES,
   buildManagedManifest,
+  buildProjectionPlan,
   buildProjectionEntries,
   buildManagedFiles,
   findByType
 } = require('../lib/manifest');
+const { listTargets } = require('../lib/adapters');
 
 test('legacy MANAGED_FILES stays aligned with antigravity target', () => {
   assert.deepEqual(MANAGED_FILES, buildManagedFiles('antigravity'));
@@ -71,4 +73,31 @@ test('resource registry exposes workflows and skills', () => {
 
   assert(workflows.some((item) => item.id === 'genesis'));
   assert(skills.some((item) => item.id === 'spec-writer'));
+});
+
+test('all supported targets expose the expected projection shapes', () => {
+  const expectedByTarget = {
+    windsurf: ['.windsurf/workflows/genesis.md', '.windsurf/skills/spec-writer/SKILL.md'],
+    antigravity: ['AGENTS.md', '.agents/workflows/genesis.md', '.agents/skills/spec-writer/SKILL.md'],
+    cursor: ['.cursor/commands/genesis.md', '.cursor/commands/spec-writer.md'],
+    claude: ['.claude/commands/genesis.md', '.claude/commands/spec-writer.md'],
+    copilot: ['.github/agents/genesis.md', '.github/prompts/genesis.md', '.github/prompts/spec-writer.md'],
+    codex: ['.codex/prompts/genesis.md', '.codex/skills/spec-writer/SKILL.md']
+  };
+
+  for (const target of listTargets()) {
+    const files = buildManagedFiles(target.id);
+    const entries = buildProjectionEntries(target.id);
+    const plan = buildProjectionPlan(target.id)[0];
+
+    for (const expectedPath of expectedByTarget[target.id]) {
+      assert(files.includes(expectedPath), `${target.id} should manage ${expectedPath}`);
+      assert(entries.some((item) => item.outputPath === expectedPath) || expectedPath === 'AGENTS.md');
+    }
+
+    assert.equal(plan.targetId, target.id);
+    assert.equal(plan.targetLabel, target.label);
+    assert.deepEqual(plan.managedFiles, files);
+    assert(plan.ownership.every((item) => item.startsWith(`${target.id}:`)));
+  }
 });

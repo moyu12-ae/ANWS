@@ -213,7 +213,7 @@ graph TD
 
 ### Phase 1: Integration
 
-- [ ] **T3.1.1** [REQ-006]: 同步根 README / README_CN 到多目标安装与更新模型
+- [x] **T3.1.1** [REQ-006]: 同步根 README / README_CN 到多目标安装与更新模型
   - **描述**: 更新仓库根 `README.md` 与 `README_CN.md` 的快速开始、兼容性、项目结构、update 说明与 install-lock 语义，确保文档与 v6 行为一致。
   - **输入**: `.anws/v6/01_PRD.md` 的 US06；T1.3.1 产出的 CLI help 文案；T2.1.2 的 target matrix 定义。
   - **输出**: 更新后的 `README.md` 与 `README_CN.md`。
@@ -232,7 +232,7 @@ graph TD
   - **估时**: 3h
   - **依赖**: T1.3.1
 
-- [ ] **T3.1.2** [REQ-006]: 同步 `src/anws/README*.md` 镜像文档
+- [x] **T3.1.2** [REQ-006]: 同步 `src/anws/README*.md` 镜像文档
   - **描述**: 将根 README 的多目标语义同步到 `src/anws/README.md` 与 `src/anws/README_CN.md`，避免发布包文档与仓库文档分叉。
   - **输入**: T3.1.1 产出的 README / README_CN 更新内容。
   - **输出**: 更新后的 `src/anws/README.md` 与 `src/anws/README_CN.md`。
@@ -366,7 +366,7 @@ graph TD
 
 ### Phase 2: Polish
 
-- [ ] **T6.2.1** [REQ-003]: 扩展 manifest / adapter 单元测试覆盖目标矩阵
+- [x] **T6.2.1** [REQ-003]: 扩展 manifest / adapter 单元测试覆盖目标矩阵
   - **描述**: 扩展 `src/anws/test/manifest.test.js` 与 `src/anws/test/adapters.test.js`，验证 6 个 targets 的 projection shape、layout、detection 与错误提示一致。
   - **输入**: T2.1.1 产出的 target-aware manifest API；T2.1.2 产出的 target registry；现有 `src/anws/test/manifest.test.js` 与 `src/anws/test/adapters.test.js`。
   - **输出**: 更新后的 `src/anws/test/manifest.test.js`；更新后的 `src/anws/test/adapters.test.js`。
@@ -385,7 +385,7 @@ graph TD
   - **估时**: 3h
   - **依赖**: T2.2.1
 
-- [ ] **T6.2.2** [REQ-005]: 新增 install-state 单元测试覆盖 schema、去重与漂移路径
+- [x] **T6.2.2** [REQ-005]: 新增 install-state 单元测试覆盖 schema、去重与漂移路径
   - **描述**: 为 `src/anws/lib/install-state.js` 增加独立单元测试，验证 lock schema、损坏容错、target 去重和 drift 检测结果结构。
   - **输入**: T4.1.1 产出的 install-state 模块；T4.1.2 产出的 drift/fallback API。
   - **输出**: 新增 `src/anws/test/install-state.test.js`。
