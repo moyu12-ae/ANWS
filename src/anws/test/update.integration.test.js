@@ -77,3 +77,33 @@ test('anws update falls back to directory scan when install-lock is missing', as
     assert.match(checkResult.stdout, /Windsurf \(windsurf\)/);
   });
 });
+
+test('anws update keeps successful targets in lock and reports failed targets separately', async () => {
+  await withTempDir(async (tempDir) => {
+    const initResult = runCliInDir(tempDir, ['init', '--target', 'windsurf,codex']);
+    assert.equal(initResult.status, 0, initResult.stderr || initResult.stdout);
+
+    await fs.rm(path.join(tempDir, '.anws', 'changelog'), { recursive: true, force: true });
+    await fs.rm(path.join(tempDir, '.codex', 'prompts'), { recursive: true, force: true });
+    await fs.mkdir(path.join(tempDir, '.codex'), { recursive: true });
+    await fs.writeFile(path.join(tempDir, '.codex', 'prompts'), 'blocked parent path', 'utf8');
+
+    const updateResult = runCliInDir(tempDir, ['update', '--yes']);
+
+    assert.equal(updateResult.status, 0, updateResult.stderr || updateResult.stdout);
+    assert.match(updateResult.stdout, /Update summary by target:/);
+    assert.match(updateResult.stdout, /Windsurf \(windsurf\)/);
+    assert.match(updateResult.stdout, /Codex \(codex\)/);
+
+    const lock = JSON.parse(await fs.readFile(path.join(tempDir, '.anws', 'install-lock.json'), 'utf8'));
+    assert(lock.lastUpdateSummary.successfulTargets.includes('windsurf'));
+    assert.deepEqual(lock.lastUpdateSummary.failedTargets, ['codex']);
+
+    const changelogFiles = await fs.readdir(path.join(tempDir, '.anws', 'changelog'));
+    const changelogFile = changelogFiles.find((name) => /^v\d+\.\d+\.\d+\.md$/.test(name));
+    const changelog = await fs.readFile(path.join(tempDir, '.anws', 'changelog', changelogFile), 'utf8');
+    assert.match(changelog, /成功 Targets/);
+    assert.match(changelog, /失败 Targets/);
+    assert.match(changelog, /Codex \(codex\)/);
+  });
+});

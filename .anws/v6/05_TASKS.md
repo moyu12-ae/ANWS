@@ -102,7 +102,7 @@ graph TD
   - **估时**: 6h
   - **依赖**: T2.2.1, T4.1.1, T4.1.2, T5.1.1
 
-- [ ] **T1.2.2** [REQ-004]: 为 `update` 实现部分成功回写与 changelog 汇总
+- [x] **T1.2.2** [REQ-004]: 为 `update` 实现部分成功回写与 changelog 汇总
   - **描述**: 为多目标 update 实现 per-target 成功/失败聚合、成功 target 状态回写、失败 target 保留报告以及 changelog/summary 输出。
   - **输入**: T1.2.1 产出的多目标 update 编排流程；T4.1.1 的 lock 回写 API；现有 `.anws/changelog` 输出机制。
   - **输出**: 更新后的 `src/anws/lib/update.js`；按 target 分组的更新摘要与 changelog 写入逻辑。

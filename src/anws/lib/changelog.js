@@ -104,7 +104,7 @@ function formatDetail(item) {
   ].join('\n');
 }
 
-async function generateChangelog({ cwd, version, changes }) {
+async function generateChangelog({ cwd, version, changes, targetSummary = null }) {
   const changelogDir = await ensureChangelogDir(cwd);
   const grouped = groupChanges(changes);
   const now = new Date();
@@ -119,8 +119,14 @@ async function generateChangelog({ cwd, version, changes }) {
     '',
     '## 元信息',
     `- **升级版本**: ${version}`,
-    `- **升级时间**: ${timestamp}`,
+    `- 升级时间: ${timestamp}`,
     '- **升级类型**: 由 `/upgrade` 工作流判断 (Minor/Major)',
+    ...(targetSummary
+      ? [
+          `- **成功 Targets**: ${targetSummary.successfulTargets.length > 0 ? targetSummary.successfulTargets.join(', ') : '无'}`,
+          `- **失败 Targets**: ${targetSummary.failedTargets.length > 0 ? targetSummary.failedTargets.join(', ') : '无'}`
+        ]
+      : []),
     '',
     '## 变更摘要',
     `- 新增文件: ${grouped.added.length}`,

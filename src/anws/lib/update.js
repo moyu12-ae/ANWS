@@ -149,19 +149,28 @@ async function update(options = {}) {
   const updated = [];
   const skipped = [];
   const successfulTargets = [];
+  const failedTargets = [];
 
   for (const context of targetContexts) {
-    const result = await writeTargetFiles(cwd, {
-      targetPlan: context.targetPlan,
-      protectedFiles: context.targetPlan.userProtectedFiles,
-      srcAgents,
-      shouldWriteRootAgents: context.agentsDecision.shouldWriteRootAgents,
-      resolveCanonicalSource
-    });
+    try {
+      const result = await writeTargetFiles(cwd, {
+        targetPlan: context.targetPlan,
+        protectedFiles: context.targetPlan.userProtectedFiles,
+        srcAgents,
+        shouldWriteRootAgents: context.agentsDecision.shouldWriteRootAgents,
+        resolveCanonicalSource
+      });
 
-    updated.push(...result.written);
-    skipped.push(...result.skipped);
-    successfulTargets.push(summarizeTargetState(context.targetPlan, version));
+      updated.push(...result.written);
+      skipped.push(...result.skipped);
+      successfulTargets.push(summarizeTargetState(context.targetPlan, version));
+    } catch (error) {
+      failedTargets.push({
+        targetId: context.target.id,
+        targetLabel: context.target.label,
+        reason: error.message
+      });
+    }
   }
 
   blank();
@@ -179,7 +188,17 @@ async function update(options = {}) {
     }
   }
 
-  const changelogPath = await generateChangelog({ cwd, version, changes });
+  printTargetUpdateSummary(successfulTargets, failedTargets);
+
+  const changelogPath = await generateChangelog({
+    cwd,
+    version,
+    changes,
+    targetSummary: {
+      successfulTargets: successfulTargets.map((item) => `${item.targetLabel} (${item.targetId})`),
+      failedTargets: failedTargets.map((item) => `${item.targetLabel} (${item.targetId})`)
+    }
+  });
   const generatedAt = new Date().toISOString();
   await writeInstallLock(cwd, createInstallLock({
     cliVersion: version,
@@ -190,7 +209,7 @@ async function update(options = {}) {
     ]),
     lastUpdateSummary: {
       successfulTargets: successfulTargets.map((item) => item.targetId),
-      failedTargets: [],
+      failedTargets: failedTargets.map((item) => item.targetId),
       updatedAt: generatedAt
     }
   }));
@@ -294,6 +313,17 @@ function printTargetSelection(installState, targets) {
   }
   if (installState.drift.hasDrift) {
     warn(`State drift detected. Missing on disk: ${installState.drift.missingOnDisk.join(', ') || 'none'}; untracked on disk: ${installState.drift.untrackedOnDisk.join(', ') || 'none'}.`);
+  }
+}
+
+function printTargetUpdateSummary(successfulTargets, failedTargets) {
+  blank();
+  info('Update summary by target:');
+  for (const target of successfulTargets) {
+    info(`  ✔ ${target.targetLabel} (${target.targetId})`);
+  }
+  for (const target of failedTargets) {
+    info(`  ✖ ${target.targetLabel} (${target.targetId}) — ${target.reason}`);
   }
 }
 
