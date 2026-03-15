@@ -123,7 +123,7 @@ graph TD
 
 ### Phase 3: Polish
 
-- [ ] **T1.3.1** [REQ-006]: 同步 CLI help、交互提示与错误文案到多目标模型
+- [x] **T1.3.1** [REQ-006]: 同步 CLI help、交互提示与错误文案到多目标模型
   - **描述**: 更新 `src/anws/bin/cli.js` 及相关输出模块，让 init/update/help/错误提示完整表达多目标安装、扫描更新、install-lock 和部分成功语义。
   - **输入**: `.anws/v6/01_PRD.md` 的 US06；T1.1.2 的 init 摘要输出；T1.2.2 的 update 摘要输出；现有 `src/anws/lib/output.js`。
   - **输出**: 更新后的 `src/anws/bin/cli.js`；必要时更新 `src/anws/lib/output.js` 中的说明与错误消息。
@@ -345,7 +345,7 @@ graph TD
   - **估时**: 3h
   - **依赖**: T1.1.1, T1.1.2
 
-- [ ] **T6.1.2** [REQ-004]: 扩展 `update` 集成测试覆盖扫描、check 与部分成功
+- [x] **T6.1.2** [REQ-004]: 扩展 `update` 集成测试覆盖扫描、check 与部分成功
   - **描述**: 扩展 `src/anws/test/update.integration.test.js`，覆盖 lock 驱动扫描、目录扫描 fallback、`update --check` 按 target 分组展示以及部分成功回写行为。
   - **输入**: T1.2.2 产出的多目标 update 行为；T4.1.2 的 fallback API；现有 `src/anws/test/update.integration.test.js`。
   - **输出**: 更新后的 `src/anws/test/update.integration.test.js`。

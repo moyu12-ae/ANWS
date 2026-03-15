@@ -16,20 +16,20 @@ USAGE
   anws <command> [options]
 
 COMMANDS
-  init      Choose a target AI IDE and install its managed workflow projection
-  update    Update the managed files for the currently installed target IDE
+  init      Install one or more target AI IDE workflow projections
+  update    Scan installed targets from install-lock or directory layout and update them
 
 OPTIONS
   -v, --version   Print version number
   -h, --help      Show this help message
   --target        Target AI IDE(s) for \`init\`, comma-separated (${TARGET_IDS.join(', ')})
-  --check         Preview update diff without writing files
+  --check         Preview grouped update diffs without writing files or install-lock state
 
 EXAMPLES
-  anws init          # Choose a target IDE and set up its workflow system
-  anws init --target windsurf
-  anws update        # Update the currently installed target projection
-  anws update --check
+  anws init                       # Choose target IDEs and install their managed workflow projections
+  anws init --target windsurf,codex
+  anws update                     # Update all matched targets from install-lock or directory scan
+  anws update --check             # Preview grouped changes per target without writing files
 `.trimStart();
 
 // ─── 参数解析 ─────────────────────────────────────────────────────────────────
