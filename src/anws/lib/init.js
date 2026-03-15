@@ -1,102 +1,97 @@
 'use strict';
 
-const fs = require('node:fs/promises');
 const path = require('node:path');
-const { buildManagedFiles, buildProjectionEntries, buildUserProtectedFiles } = require('./manifest');
-const { detectInstalledTargets, getTarget, listTargets } = require('./adapters');
+const { buildProjectionPlan } = require('./manifest');
+const { getTarget, listTargets } = require('./adapters');
 const { resolveAgentsInstall, printLegacyMigrationWarning, pathExists } = require('./agents');
 const { ensureChangelogDir } = require('./changelog');
 const { ROOT_AGENTS_FILE, resolveCanonicalSource } = require('./resources');
-const { success, warn, error, info, fileLine, skippedLine, blank, logo } = require('./output');
+const { writeTargetFiles } = require('./copy');
+const { createInstallLock, dedupeTargets, detectInstallState, summarizeTargetState, writeInstallLock } = require('./install-state');
+const { success, warn, info, fileLine, skippedLine, blank, logo } = require('./output');
 
-/**
- * anws init — 将工作流系统写入当前项目
- */
 async function init() {
   const cwd = process.cwd();
-  const target = await selectTarget();
-  const installedTargets = await detectInstalledTargets(cwd);
-  const conflictingTargets = installedTargets.filter((item) => item.id !== target.id);
-
-  if (conflictingTargets.length > 0) {
-    logo();
-    blank();
-    error(`This project already contains another managed target: ${conflictingTargets.map((item) => item.label).join(', ')}.`);
-    info(`anws currently supports a single installed target layout per project. Refusing to install ${target.label} on top of an existing target.`);
-    info('Please remove the existing target layout first, or run `anws update` for the installed target.');
-    process.exit(1);
-  }
-
-  if (installedTargets.length > 1) {
-    logo();
-    blank();
-    error(`Multiple managed target layouts detected: ${installedTargets.map((item) => item.label).join(', ')}.`);
-    info('anws currently supports a single installed target layout per project. Please clean up the conflicting layouts before continuing.');
-    process.exit(1);
-  }
-
-  const managedFiles = buildManagedFiles(target.id);
-  const protectedFiles = buildUserProtectedFiles(target.id);
-  const projectionEntries = buildProjectionEntries(target.id);
+  const targets = await selectTargets();
+  const targetIds = Array.from(new Set(targets.map((item) => item.id)));
+  const targetPlans = buildProjectionPlan(targetIds);
+  const installState = await detectInstallState(cwd);
   const srcAgents = ROOT_AGENTS_FILE;
-
-  const agentsDecision = target.id === 'antigravity'
-    ? await resolveAgentsInstall({
-      cwd,
-      askMigrate,
-      forceYes: !!global.__ANWS_FORCE_YES
-    })
-    : {
-      shouldWriteRootAgents: false,
-      shouldWarnMigration: false
-    };
-
-  const conflicting = await findConflicts(cwd, managedFiles);
-  if (conflicting.length > 0) {
-    const confirmed = await askOverwrite(conflicting.length);
-    if (!confirmed) {
-      blank();
-      info('Aborted. No files were changed.');
-      process.exit(0);
-    }
-    const { written: updated, skipped } = await overwriteManaged(cwd, {
-      managedFiles,
-      protectedFiles,
-      projectionEntries,
-      srcAgents,
-      shouldWriteRootAgents: agentsDecision.shouldWriteRootAgents
-    });
-    await ensureChangelogDir(cwd);
-    if (agentsDecision.shouldWarnMigration) {
-      printLegacyMigrationWarning();
-    }
-    printSummary(updated, skipped, 'updated');
-    return;
-  }
-  // ── 无冲突:直接复制 ─────────────────────────────────────────────────────────
+  const cliVersion = require(path.join(__dirname, '..', 'package.json')).version;
 
   logo();
   info('Initializing Anws...');
-  info(`Target IDE: ${target.label}`);
+  info(`Target IDEs: ${targets.map((item) => item.label).join(', ')}`);
+  if (installState.needsFallback) {
+    info('Install lock missing or unreadable. Falling back to scanned target state.');
+  }
+  if (installState.drift.hasDrift) {
+    warn(`Detected install-state drift. Missing on disk: ${installState.drift.missingOnDisk.join(', ') || 'none'}; untracked on disk: ${installState.drift.untrackedOnDisk.join(', ') || 'none'}.`);
+  }
   blank();
 
-  const { written, skipped } = await overwriteManaged(cwd, {
-    managedFiles,
-    protectedFiles,
-    projectionEntries,
-    srcAgents,
-    shouldWriteRootAgents: agentsDecision.shouldWriteRootAgents
-  });
-  await ensureChangelogDir(cwd);
+  const written = [];
+  const skipped = [];
+  const successfulTargets = [];
 
-  if (agentsDecision.shouldWarnMigration) {
-    printLegacyMigrationWarning();
+  for (const targetPlan of targetPlans) {
+    const target = getTarget(targetPlan.targetId);
+    const agentsDecision = target.id === 'antigravity'
+      ? await resolveAgentsInstall({
+        cwd,
+        askMigrate,
+        forceYes: !!global.__ANWS_FORCE_YES
+      })
+      : {
+        shouldWriteRootAgents: false,
+        shouldWarnMigration: false
+      };
+
+    const conflicting = await findConflicts(cwd, targetPlan.managedFiles);
+    if (conflicting.length > 0) {
+      const confirmed = await askOverwrite(conflicting.length, target.label);
+      if (!confirmed) {
+        skipped.push(...targetPlan.managedFiles);
+        continue;
+      }
+    }
+
+    const result = await writeTargetFiles(cwd, {
+      targetPlan,
+      protectedFiles: targetPlan.userProtectedFiles,
+      srcAgents,
+      shouldWriteRootAgents: agentsDecision.shouldWriteRootAgents,
+      resolveCanonicalSource
+    });
+
+    written.push(...result.written);
+    skipped.push(...result.skipped);
+    successfulTargets.push(summarizeTargetState(targetPlan, cliVersion));
+
+    if (agentsDecision.shouldWarnMigration) {
+      printLegacyMigrationWarning();
+    }
   }
 
-  // 打印文件列表
-  for (const absPath of written) {
-    const rel = path.relative(cwd, absPath).replace(/\\/g, '/');
-    fileLine(rel);
+  await ensureChangelogDir(cwd);
+  const existingTargets = installState.lockResult.lock?.targets || [];
+  const generatedAt = new Date().toISOString();
+  await writeInstallLock(cwd, createInstallLock({
+    cliVersion,
+    generatedAt,
+    targets: dedupeTargets([
+      ...existingTargets,
+      ...successfulTargets
+    ]),
+    lastUpdateSummary: {
+      successfulTargets: successfulTargets.map((item) => item.targetId),
+      failedTargets: targetIds.filter((targetId) => !successfulTargets.some((item) => item.targetId === targetId)),
+      updatedAt: generatedAt
+    }
+  }));
+
+  for (const rel of written) {
+    fileLine(rel.replace(/\\/g, '/'));
   }
 
   if (skipped.length > 0) {
@@ -108,8 +103,8 @@ async function init() {
   }
 
   blank();
-  success(`Done! ${written.length} files written for ${target.label}.`);
-  printNextSteps(target);
+  success(`Done! ${written.length} files written for ${successfulTargets.map((item) => item.targetLabel).join(', ') || 'selected targets'}.`);
+  printNextSteps(targets);
 }
 
 // ─── 辅助函数 ──────────────────────────────────────────────────────────────────
@@ -133,7 +128,7 @@ async function findConflicts(cwd, managedFiles) {
  * 非 TTY 环境（如 CI）自动返回 false。
  * @returns {Promise<boolean>}
  */
-async function askOverwrite(count) {
+async function askOverwrite(count, label) {
   if (global.__ANWS_FORCE_YES) return true;
 
   // 非 TTY 环境：默认不覆盖，防止 CI 挂起
@@ -147,7 +142,7 @@ async function askOverwrite(count) {
 
   return new Promise((resolve) => {
     rl.question(
-      `\n\u26a0  ${count} managed file(s) already exist. Overwrite? [y/N] `,
+      `\n\u26a0  ${count} managed file(s) already exist for ${label}. Overwrite? [y/N] `,
       (answer) => {
         rl.close();
         resolve(answer.trim().toLowerCase() === 'y');
@@ -178,50 +173,6 @@ async function askMigrate() {
 }
 
 /**
- * 仅覆盖托管清单内的文件，用户自有文件不受影响。
- * @returns {{ written: string[], skipped: string[] }}
- */
-async function overwriteManaged(cwd, options = {}) {
-  const written = [];
-  const skipped = [];
-  const managedFiles = options.managedFiles || [];
-  const protectedFiles = options.protectedFiles || [];
-  const projectionEntries = options.projectionEntries || [];
-  const shouldWriteRootAgents = options.shouldWriteRootAgents !== false;
-  const srcAgents = options.srcAgents || ROOT_AGENTS_FILE;
-  const projectionMap = new Map(projectionEntries.map((item) => [item.outputPath, item]));
-
-  for (const rel of managedFiles) {
-    if (rel === 'AGENTS.md' && !shouldWriteRootAgents) {
-      skipped.push(rel);
-      continue;
-    }
-
-    if (protectedFiles.includes(rel)) {
-      const destPath = path.join(cwd, rel);
-      const exists = await pathExists(destPath);
-      if (exists) {
-        skipped.push(rel);
-        continue;
-      }
-    }
-
-    const entry = projectionMap.get(rel);
-    const srcPath = rel === 'AGENTS.md' ? srcAgents : resolveCanonicalSource(entry.source);
-    const destPath = path.join(cwd, rel);
-
-    await fs.mkdir(path.dirname(destPath), { recursive: true });
-    const srcExists = await pathExists(srcPath);
-    if (srcExists) {
-      await fs.copyFile(srcPath, destPath);
-      written.push(rel);
-    }
-  }
-
-  return { written, skipped };
-}
-
-/**
  * 打印操作摘要（更新场景）。
  * @param {string[]} files  已写入的文件
  * @param {string[]} skipped 受保护跳过的文件
@@ -249,13 +200,13 @@ function printSummary(files, skipped = [], action) {
   }
 }
 
-async function selectTarget() {
-  if (global.__ANWS_TARGET_ID) {
-    return getTarget(global.__ANWS_TARGET_ID);
+async function selectTargets() {
+  if (global.__ANWS_TARGET_IDS && global.__ANWS_TARGET_IDS.length > 0) {
+    return global.__ANWS_TARGET_IDS.map((targetId) => getTarget(targetId));
   }
 
   if (!process.stdin.isTTY) {
-    return getTarget('antigravity');
+    return [getTarget('antigravity')];
   }
 
   const targets = listTargets();
@@ -263,38 +214,37 @@ async function selectTarget() {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 
   blank();
-  info('Choose your target AI IDE:');
+  info('Choose your target AI IDEs:');
   targets.forEach((target, index) => {
     info(`  ${index + 1}. ${target.label}`);
   });
 
-  const selectedIndex = await new Promise((resolve) => {
-    rl.question('\nSelect target [1-6] (default 2): ', (answer) => {
+  const selectedIndexes = await new Promise((resolve) => {
+    rl.question('\nSelect targets [1-6, comma separated] (default 2): ', (answer) => {
       rl.close();
       const normalized = answer.trim();
       if (!normalized) {
-        resolve(1);
+        resolve([1]);
         return;
       }
-      const parsed = Number.parseInt(normalized, 10);
-      if (Number.isNaN(parsed) || parsed < 1 || parsed > targets.length) {
-        resolve(1);
-        return;
-      }
-      resolve(parsed - 1);
+      const parsedValues = normalized
+        .split(',')
+        .map((item) => Number.parseInt(item.trim(), 10))
+        .filter((item) => !Number.isNaN(item) && item >= 1 && item <= targets.length);
+      resolve(parsedValues.length > 0 ? Array.from(new Set(parsedValues.map((item) => item - 1))) : [1]);
     });
   });
 
-  return targets[selectedIndex];
+  return selectedIndexes.map((index) => targets[index]);
 }
 
-function printNextSteps(target) {
+function printNextSteps(targets) {
   blank();
   info('Next steps:');
-  if (target.rootAgentFile) {
+  if (targets.some((target) => target.rootAgentFile)) {
     info('  1. Read AGENTS.md to understand the system');
   } else {
-    info(`  1. Review files written under the ${target.label} target directories`);
+    info('  1. Review files written under the selected target directories');
   }
   info('  2. Run /quickstart in your AI assistant to analyze and start the workflow');
 }

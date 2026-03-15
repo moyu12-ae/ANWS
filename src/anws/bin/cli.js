@@ -22,7 +22,7 @@ COMMANDS
 OPTIONS
   -v, --version   Print version number
   -h, --help      Show this help message
-  --target        Target AI IDE for \`init\` (${TARGET_IDS.join(', ')})
+  --target        Target AI IDE(s) for \`init\`, comma-separated (${TARGET_IDS.join(', ')})
   --check         Preview update diff without writing files
 
 EXAMPLES
@@ -51,8 +51,9 @@ if (values.yes) {
 }
 
 if (values.target !== undefined) {
-  getTarget(values.target);
-  global.__ANWS_TARGET_ID = values.target;
+  const targetIds = values.target.split(',').map((item) => item.trim()).filter(Boolean);
+  targetIds.forEach((targetId) => getTarget(targetId));
+  global.__ANWS_TARGET_IDS = Array.from(new Set(targetIds));
 }
 
 // ─── 命令路由 ─────────────────────────────────────────────────────────────────

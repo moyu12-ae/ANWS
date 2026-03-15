@@ -35,4 +35,52 @@ async function copyDir(srcDir, destDir) {
   return written;
 }
 
-module.exports = { copyDir };
+async function pathExists(targetPath) {
+  return fs.access(targetPath).then(() => true).catch(() => false);
+}
+
+async function writeTargetFiles(cwd, options = {}) {
+  const targetPlan = options.targetPlan || {};
+  const protectedFiles = options.protectedFiles || targetPlan.userProtectedFiles || [];
+  const projectionEntries = targetPlan.projectionEntries || [];
+  const shouldWriteRootAgents = options.shouldWriteRootAgents !== false;
+  const srcAgents = options.srcAgents;
+  const resolveCanonicalSource = options.resolveCanonicalSource;
+  const projectionMap = new Map(projectionEntries.map((item) => [item.outputPath, item]));
+  const written = [];
+  const skipped = [];
+
+  for (const rel of targetPlan.managedFiles || []) {
+    if (rel === 'AGENTS.md' && !shouldWriteRootAgents) {
+      skipped.push(rel);
+      continue;
+    }
+
+    if (protectedFiles.includes(rel)) {
+      const destPath = path.join(cwd, rel);
+      if (await pathExists(destPath)) {
+        skipped.push(rel);
+        continue;
+      }
+    }
+
+    const entry = projectionMap.get(rel);
+    const srcPath = rel === 'AGENTS.md' ? srcAgents : resolveCanonicalSource(entry.source);
+    const destPath = path.join(cwd, rel);
+
+    await fs.mkdir(path.dirname(destPath), { recursive: true });
+    if (await pathExists(srcPath)) {
+      await fs.copyFile(srcPath, destPath);
+      written.push(rel);
+    }
+  }
+
+  return {
+    targetId: targetPlan.targetId,
+    targetLabel: targetPlan.targetLabel,
+    written,
+    skipped
+  };
+}
+
+module.exports = { copyDir, writeTargetFiles };

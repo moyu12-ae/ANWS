@@ -58,14 +58,24 @@ test('anws init --target antigravity writes .agents and AGENTS.md', async () => 
   });
 });
 
-test('anws init rejects installing a second target layout into the same project', async () => {
+test('anws init --target windsurf,codex writes multiple target projections and install-lock', async () => {
   await withTempDir(async (tempDir) => {
-    const firstInstall = runCliInDir(tempDir, ['init', '--target', 'windsurf']);
-    assert.equal(firstInstall.status, 0, firstInstall.stderr || firstInstall.stdout);
+    const result = runCliInDir(tempDir, ['init', '--target', 'windsurf,codex']);
 
-    const secondInstall = runCliInDir(tempDir, ['init', '--target', 'antigravity']);
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+    assert.equal(await exists(path.join(tempDir, '.windsurf', 'workflows', 'genesis.md')), true);
+    assert.equal(await exists(path.join(tempDir, '.codex', 'prompts', 'genesis.md')), true);
+    assert.equal(await exists(path.join(tempDir, '.anws', 'install-lock.json')), true);
+  });
+});
 
-    assert.notEqual(secondInstall.status, 0);
-    assert.match(secondInstall.stderr + secondInstall.stdout, /single installed target layout per project/i);
+test('anws init dedupes already selected targets in install-lock', async () => {
+  await withTempDir(async (tempDir) => {
+    const result = runCliInDir(tempDir, ['init', '--target', 'windsurf,windsurf']);
+
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+    const lock = JSON.parse(await fs.readFile(path.join(tempDir, '.anws', 'install-lock.json'), 'utf8'));
+    assert.equal(lock.targets.length, 1);
+    assert.equal(lock.targets[0].targetId, 'windsurf');
   });
 });

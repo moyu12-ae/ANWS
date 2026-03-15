@@ -34,3 +34,12 @@ test('cli exits with an error for unsupported target ids', () => {
   assert.notEqual(result.status, 0);
   assert.match(result.stderr + result.stdout, /Unsupported target: invalid-target/);
 });
+
+test('cli accepts comma-separated target ids for init', () => {
+  const result = runCli(['--help']);
+
+  assert.equal(result.status, 0);
+  assert.match(result.stdout, /comma-separated/);
+  assert.match(result.stdout, /windsurf/);
+  assert.match(result.stdout, /codex/);
+});

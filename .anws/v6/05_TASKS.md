@@ -43,7 +43,7 @@ graph TD
 
 ### Phase 1: Foundation
 
-- [ ] **T1.1.1** [REQ-001]: 重构 `init` 为多目标显式选择与编排入口
+- [x] **T1.1.1** [REQ-001]: 重构 `init` 为多目标显式选择与编排入口
   - **描述**: 将 `src/anws/lib/init.js` 从单目标初始化流程重构为支持显式多选 targets 的编排入口，统一消费 projection plan 和 install state，而不是在流程里直接拼接目标逻辑。
   - **输入**: `.anws/v6/01_PRD.md` 的 US01；`.anws/v6/02_ARCHITECTURE_OVERVIEW.md` 的 Flow A；T2.2.1 产出的 projection plan API；T4.1.1 产出的 install-lock 读写 API；T5.1.1 产出的 per-target 写入结果对象。
   - **输出**: 更新后的 `src/anws/lib/init.js`；多目标选择结果到投影执行的编排接口。
@@ -257,7 +257,7 @@ graph TD
 
 ### Phase 1: Foundation
 
-- [ ] **T4.1.1** [REQ-005]: 实现 `.anws/install-lock.json` 读写与 schema 约束
+- [x] **T4.1.1** [REQ-005]: 实现 `.anws/install-lock.json` 读写与 schema 约束
   - **描述**: 创建 `src/anws/lib/install-state.js`（或等效模块），定义 install-lock schema、读写、去重、版本记录与 per-target ownership 摘要接口。
   - **输入**: `.anws/v6/03_ADR/ADR_007_INSTALL_STATE_AND_UPDATE_ORCHESTRATION.md` 的决策与约束；`.anws/v6/02_ARCHITECTURE_OVERVIEW.md` 中 Install State Registry 职责。
   - **输出**: `src/anws/lib/install-state.js`；lock schema 辅助函数；供 init/update 调用的 state API。
@@ -276,7 +276,7 @@ graph TD
   - **估时**: 5h
   - **依赖**: 无
 
-- [ ] **T4.1.2** [REQ-005]: 实现 lock 漂移检测与目录扫描 fallback
+- [x] **T4.1.2** [REQ-005]: 实现 lock 漂移检测与目录扫描 fallback
   - **描述**: 基于 adapter registry 和文件系统扫描实现 lock drift detection、缺失恢复提示与 fallback target detection，供 update 在 lock 缺失或漂移时兜底使用。
   - **输入**: T4.1.1 产出的 state API；T2.1.2 产出的 target detection metadata；现有 `src/anws/lib/adapters/index.js` 检测能力。
   - **输出**: `src/anws/lib/install-state.js` 或 adapters 层中的 drift/fallback API；update 可消费的 target scan result 数据结构。
@@ -301,7 +301,7 @@ graph TD
 
 ### Phase 1: Core
 
-- [ ] **T5.1.1** [REQ-001]: 实现 per-target 文件写入器与独立 ownership 边界
+- [x] **T5.1.1** [REQ-001]: 实现 per-target 文件写入器与独立 ownership 边界
   - **描述**: 将 `src/anws/lib/copy.js`、`src/anws/lib/init.js`、`src/anws/lib/update.js` 中的实际写入能力收口为 per-target writer，确保不同 target 的文件创建、覆盖和保护规则彼此独立。
   - **输入**: T2.2.1 产出的 grouped projection plan；现有 `src/anws/lib/copy.js`；`.anws/v6/02_ARCHITECTURE_OVERVIEW.md` 中 Target Layout Writer 边界。
   - **输出**: 更新后的 `src/anws/lib/copy.js`；per-target 写入结果对象；受管/非受管边界的统一处理逻辑。
