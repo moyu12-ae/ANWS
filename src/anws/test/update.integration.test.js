@@ -49,3 +49,31 @@ test('anws update --check detects the antigravity target layout', async () => {
     assert.match(checkResult.stdout, /Already up to date|ANWS UPDATE PREVIEW/);
   });
 });
+
+test('anws update --check detects multiple targets from install-lock and scan', async () => {
+  await withTempDir(async (tempDir) => {
+    const initResult = runCliInDir(tempDir, ['init', '--target', 'windsurf,codex']);
+    assert.equal(initResult.status, 0, initResult.stderr || initResult.stdout);
+
+    const checkResult = runCliInDir(tempDir, ['update', '--check']);
+
+    assert.equal(checkResult.status, 0, checkResult.stderr || checkResult.stdout);
+    assert.match(checkResult.stdout, /Matched targets:/);
+    assert.match(checkResult.stdout, /Windsurf \(windsurf\)/);
+    assert.match(checkResult.stdout, /Codex \(codex\)/);
+  });
+});
+
+test('anws update falls back to directory scan when install-lock is missing', async () => {
+  await withTempDir(async (tempDir) => {
+    const initResult = runCliInDir(tempDir, ['init', '--target', 'windsurf']);
+    assert.equal(initResult.status, 0, initResult.stderr || initResult.stdout);
+    await fs.rm(path.join(tempDir, '.anws', 'install-lock.json'), { force: true });
+
+    const checkResult = runCliInDir(tempDir, ['update', '--check']);
+
+    assert.equal(checkResult.status, 0, checkResult.stderr || checkResult.stdout);
+    assert.match(checkResult.stdout, /State source: directory scan fallback/);
+    assert.match(checkResult.stdout, /Windsurf \(windsurf\)/);
+  });
+});

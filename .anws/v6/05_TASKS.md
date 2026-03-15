@@ -83,7 +83,7 @@ graph TD
 
 ### Phase 2: Core
 
-- [ ] **T1.2.1** [REQ-004]: 重构 `update` 为多目标扫描、展示与统一更新入口
+- [x] **T1.2.1** [REQ-004]: 重构 `update` 为多目标扫描、展示与统一更新入口
   - **描述**: 将 `src/anws/lib/update.js` 从单目标上下文升级为读取 install-lock、目录扫描兜底、展示命中 targets 并统一调度更新的编排入口。
   - **输入**: `.anws/v6/01_PRD.md` 的 US04/US05；`.anws/v6/02_ARCHITECTURE_OVERVIEW.md` 的 Flow B；T4.1.1 的 lock 读取 API；T4.1.2 的 drift/fallback 检测 API；T2.2.1 的 projection diff API；T5.1.1 的 per-target 写入器。
   - **输出**: 更新后的 `src/anws/lib/update.js`；按 target 分组的扫描结果与更新调度流程。
@@ -326,7 +326,7 @@ graph TD
 
 ### Phase 1: Integration
 
-- [ ] **T6.1.1** [REQ-001]: 扩展 `init` 集成测试覆盖多目标安装与去重
+- [x] **T6.1.1** [REQ-001]: 扩展 `init` 集成测试覆盖多目标安装与去重
   - **描述**: 扩展 `src/anws/test/init.integration.test.js`，覆盖空项目多目标安装、重复 target 选择、部分成功与 install-lock 生成场景。
   - **输入**: T1.1.2 产出的多目标 init 行为；T4.1.1 的 install-lock schema；现有 `src/anws/test/init.integration.test.js`。
   - **输出**: 更新后的 `src/anws/test/init.integration.test.js`。
