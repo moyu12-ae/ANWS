@@ -75,13 +75,13 @@
 
 > **注意**: 这是项目文件中的保留部分，由 `/genesis`、`/blueprint` 和 `/forge` 自动维护。
 
-- **最新架构版本**: `.anws/v2`
+- **最新架构版本**: `.anws/v{N}`
 - **活动任务清单**: `尚未生成` (等待 /blueprint)
 - **待办任务数**: -
-- **最近一次更新**: `2026-03-13`
+- **最近一次更新**: `[由 Workflow 自动填充]`
 
 ### 🌊 Wave 1 — 待 /blueprint 或 /forge 设置
-_尚未开始执行_
+_由 `/blueprint` 或 `/forge` 自动填充_
 
 ---
 
@@ -93,14 +93,14 @@ _尚未开始执行_
 src/
 └── anws/
     ├── bin/cli.js
-    ├── lib/ (init, update, diff, changelog, copy, manifest)
+    ├── lib/ (init, update, diff, changelog, copy, manifest, ...)
     └── templates/
         ├── .agents/   (工作流模板)
         └── AGENTS.md
 
 .anws/
 ├── changelog/         (升级记录)
-└── v2/                (当前架构文档)
+└── v{N}/              (当前架构文档)
 ```
 
 ---
@@ -110,17 +110,17 @@ src/
 > **注意**: 此部分由 `/genesis` 维护。
 
 - **在新架构就绪前**: 请勿大规模修改代码。
-- **架构总览**: `.anws/v2/02_ARCHITECTURE_OVERVIEW.md`
-- **ADR**: `.anws/v2/03_ADR/` (跨系统决策的唯一记录源)
-- **遇到架构问题**: 请查阅 `.anws/v2/03_ADR/`。
+- **架构总览**: `.anws/v{N}/02_ARCHITECTURE_OVERVIEW.md`
+- **ADR**: `.anws/v{N}/03_ADR/` (跨系统决策的唯一记录源)
+- **遇到架构问题**: 请查阅 `.anws/v{N}/03_ADR/`。
 
 ---
 
 ### 技术栈决策
-- [由 .anws/tech-evaluator 自动填充]
+- [由 .anws/tech-evaluator 或 /genesis 自动填充]
 
 ### 系统边界
-- [由 .anws/system-architect 自动填充]
+- [由 .anws/system-architect 或 /genesis 自动填充]
 
 ### 活跃 ADR
 - [由 .anws 自动填充 ADR 摘要]

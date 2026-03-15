@@ -1,0 +1,142 @@
+{
+  "glossary": {
+    "Multi-Target Installation": "同一项目内显式安装多个 AI IDE target 的投影结果，而不是一次只允许一个 target。",
+    "Canonical Source": "anws 内部唯一的语义能力源，不直接等同于任何目标目录。",
+    "Target-Specific Projection": "将 canonical capability 映射为某个 target 所需资源形态与目录布局后的结果。",
+    "Install Lock": "记录已安装 targets、版本与受管投影摘要的权威状态文件，例如 .anws/install-lock.json。",
+    "Managed Projection": "由 anws 负责创建、更新和比对的 target-specific 文件集合。"
+  },
+  "entities": [
+    {
+      "name": "CanonicalCapability",
+      "type": "聚合根",
+      "necessity": "必须",
+      "description": "anws 的语义能力单位，例如 workflow、skill、prompt 背后的统一能力真相。"
+    },
+    {
+      "name": "TargetInstallation",
+      "type": "聚合根",
+      "necessity": "必须",
+      "description": "某个 target 在当前项目中的一次已安装状态，包含 target id、版本与投影摘要。"
+    },
+    {
+      "name": "ProjectionSet",
+      "type": "实体",
+      "necessity": "必须",
+      "description": "某个 target 由 canonical source 计算得到的一组受管投影文件。"
+    },
+    {
+      "name": "InstallLock",
+      "type": "聚合根",
+      "necessity": "必须",
+      "description": "`.anws/install-lock.json` 一类权威安装状态文件，记录项目中所有已安装 targets 及其受管摘要。"
+    },
+    {
+      "name": "UpdateSelection",
+      "type": "实体",
+      "necessity": "必须",
+      "description": "一次 update 扫描后命中的 target 集合，以及本次默认更新范围。"
+    }
+  ],
+  "flows": [
+    {
+      "from": "User",
+      "action": "选择多个目标安装",
+      "to": "CLI",
+      "data": "target ids[]",
+      "trigger": "anws init"
+    },
+    {
+      "from": "CLI",
+      "action": "解析 canonical source",
+      "to": "Projection Planner",
+      "data": "capabilities + selected targets",
+      "trigger": "init / update"
+    },
+    {
+      "from": "Projection Planner",
+      "action": "生成独立投影集合",
+      "to": "Target Layout Writer",
+      "data": "projection sets per target",
+      "trigger": "init / update"
+    },
+    {
+      "from": "Target Layout Writer",
+      "action": "写入多个 target 目录",
+      "to": "Project File System",
+      "data": "managed projection files",
+      "trigger": "init"
+    },
+    {
+      "from": "CLI",
+      "action": "写入安装状态",
+      "to": "InstallLock",
+      "data": "installed targets + version + managed summary",
+      "trigger": "init / update"
+    },
+    {
+      "from": "CLI",
+      "action": "扫描并展示已安装 targets",
+      "to": "User",
+      "data": "detected targets",
+      "trigger": "anws update"
+    },
+    {
+      "from": "CLI",
+      "action": "默认统一更新命中 targets",
+      "to": "Project File System",
+      "data": "managed updates for all detected targets",
+      "trigger": "anws update"
+    }
+  ],
+  "missing_components": [
+    {
+      "component": "部分 target 更新失败策略",
+      "category": "错误处理",
+      "priority": "高",
+      "reason": "多目标 update 时，某个 target 失败不能把其他 target 的状态语义弄脏。"
+    },
+    {
+      "component": "InstallLock 与文件系统漂移修复",
+      "category": "一致性",
+      "priority": "高",
+      "reason": "用户可能手动删除或修改 target 目录，导致 lock 与真实状态不一致。"
+    },
+    {
+      "component": "target 移除 / 反安装流程",
+      "category": "生命周期",
+      "priority": "高",
+      "reason": "多目标安装后必须有明确方式移除某个 target 的受管投影。"
+    },
+    {
+      "component": "共享资源命名与冲突规范",
+      "category": "约束",
+      "priority": "中",
+      "reason": "虽然采用共享源 + 独立落盘，但不同 target 之间仍需统一 capability 命名与映射规范。"
+    },
+    {
+      "component": "多目标 preview 与 changelog 聚合格式",
+      "category": "可观测性",
+      "priority": "中",
+      "reason": "update --check 与 changelog 在多 target 模式下需要清晰展示分目标结果。"
+    }
+  ],
+  "clarifications": [
+    {
+      "question": "多目标安装具体指什么？",
+      "answer": "同一项目可同时安装多个目标 IDE 投影。"
+    },
+    {
+      "question": "update 扫描到多个 target 后默认如何执行？",
+      "answer": "先展示扫描结果，再默认更新全部命中的 targets。"
+    },
+    {
+      "question": "多个 target 需要相近能力时，资源归属怎么处理？",
+      "answer": "共享 canonical source，但每个 target 独立落盘。"
+    },
+    {
+      "question": "是否需要显式安装状态文件？",
+      "answer": "需要，引入 `.anws/install-lock.json` 作为权威状态。"
+    }
+  ]
+}
