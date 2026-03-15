@@ -110,6 +110,43 @@ function buildManagedManifest(targetIds = ['antigravity']) {
   });
 }
 
+function buildProjectionPlan(targetIds = ['antigravity'], resources = RESOURCE_REGISTRY) {
+  return toArray(targetIds).map((targetId) => {
+    const target = getTarget(targetId);
+    const typeMap = target.projectionTypes;
+    const projectionEntries = resources.flatMap((resource) => {
+      const projectionTypes = typeMap[resource.type];
+      if (!projectionTypes) {
+        return [];
+      }
+
+      return toArray(projectionTypes).map((projectionType) => ({
+        ...resource,
+        projectionType,
+        outputRoot: target.projections[projectionType],
+        outputPath: `${target.projections[projectionType]}/${toProjectionFileName(resource, projectionType)}`,
+        targetId: target.id,
+        targetLabel: target.label,
+        ownershipKey: `${target.id}:${target.projections[projectionType]}/${toProjectionFileName(resource, projectionType)}`
+      }));
+    });
+
+    const managedFiles = target.rootAgentFile
+      ? ['AGENTS.md', ...projectionEntries.map((item) => item.outputPath)]
+      : projectionEntries.map((item) => item.outputPath);
+
+    return {
+      target,
+      targetId: target.id,
+      targetLabel: target.label,
+      managedFiles,
+      userProtectedFiles: buildUserProtectedFiles(target.id),
+      projectionEntries,
+      ownership: projectionEntries.map((item) => item.ownershipKey)
+    };
+  });
+}
+
 function buildManagedFiles(targetId = 'antigravity') {
   return buildManagedManifest(targetId).map((item) => item.outputPath);
 }
@@ -136,6 +173,7 @@ const USER_PROTECTED_FILES = buildUserProtectedFiles('antigravity');
 module.exports = {
   RESOURCE_REGISTRY,
   buildManagedManifest,
+  buildProjectionPlan,
   buildManagedFiles,
   buildProjectionEntries,
   buildUserProtectedFiles,

@@ -123,15 +123,22 @@ async function resolveExistingManagedPath(cwd, rel) {
 async function collectManagedFileDiffs({
   cwd,
   managedFiles,
+  projectionPlan = [],
   projectionEntries = [],
   srcAgents,
   shouldWriteRootAgents,
   agentsUpdatePlan = null
 }) {
   const results = [];
-  const projectionMap = new Map(projectionEntries.map((item) => [item.outputPath, item]));
+  const normalizedProjectionEntries = projectionEntries.length > 0
+    ? projectionEntries
+    : projectionPlan.flatMap((item) => item.projectionEntries || []);
+  const normalizedManagedFiles = managedFiles && managedFiles.length > 0
+    ? managedFiles
+    : projectionPlan.flatMap((item) => item.managedFiles || []);
+  const projectionMap = new Map(normalizedProjectionEntries.map((item) => [item.outputPath, item]));
 
-  for (const rel of managedFiles) {
+  for (const rel of normalizedManagedFiles) {
     if (rel === 'AGENTS.md' && !shouldWriteRootAgents) {
       continue;
     }

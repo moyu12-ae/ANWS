@@ -188,7 +188,7 @@ graph TD
 
 ### Phase 2: Core
 
-- [ ] **T2.2.1** [REQ-002]: 实现多目标 projection planner 与 per-target diff 输入
+- [x] **T2.2.1** [REQ-002]: 实现多目标 projection planner 与 per-target diff 输入
   - **描述**: 构建 projection planner，使其接收 canonical capability + target set，输出 grouped projection plan、per-target ownership 与 diff 输入，供 init/update/check 统一消费。
   - **输入**: T2.1.1 产出的 target-aware managed manifest API；T2.1.2 产出的 target matrix registry；`src/anws/lib/diff.js` 当前接口；`.anws/v6/03_ADR/ADR_006_CANONICAL_RESOURCE_MODEL.md` 的三层模型。
   - **输出**: 更新后的 planner 入口（可位于 `src/anws/lib/manifest.js` 或 adapters 层）；`src/anws/lib/diff.js` 适配多目标 projection entries 的接口。
