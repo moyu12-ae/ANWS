@@ -14,15 +14,15 @@
 
 # Anws
 
-**Anws** is a spec-driven workflow framework for AI-assisted software development.
+**Anws** is a spec-driven workflow framework for AI-assisted development across modern AI IDEs and coding tools.
 
-It gives coding agents a disciplined path:
+It helps teams build production-ready software through a disciplined path:
 
 `PRD -> Architecture -> ADR -> Tasks -> Review -> Code -> Upgrade`
 
-Instead of letting AI jump straight into implementation, Anws forces design, preserves context in files, and projects the right workflow assets into the native layout of your target AI IDE.
+Anws enforces design-first principles, preserves context in files, and prevents architectural drift across multi-tool AI coding workflows.
 
-> **TL;DR**: stop treating AI like an autocomplete toy. Give it architecture, constraints, and a lifecycle.
+> **TL;DR**: a design-first workflow framework for AI coding tools that turns vibe coding into production-oriented engineering.
 
 ## ANWS
 
@@ -171,16 +171,25 @@ If you maintain old docs or release notes, update those references before publis
 ## Compatibility
 
 Anws keeps a **single canonical workflow / skill source**, then projects it into the native directory structure expected by each tool.
+Every supported target now receives:
+
+- a root `AGENTS.md`
+- a target-native `skills/` projection
+- one target-native workflow entry surface, depending on the tool:
+  - `workflows`
+  - `commands`
+  - `prompts`
+  - aggregated `skills` for Codex Preview
 
 | Environment | Status | Layout |
 | --- | --- | --- |
-| **Windsurf** | ✅ Full Support | `.windsurf/workflows/` + `.windsurf/skills/` |
+| **Windsurf** | ✅ Full Support | `AGENTS.md` + `.windsurf/workflows/` + `.windsurf/skills/` |
 | **Antigravity** | ✅ Full Support | `.agents/workflows/` + `.agents/skills/` + `AGENTS.md` |
-| **Claude Code** | ✅ Full Support | `.claude/commands/` |
-| **GitHub Copilot** | ✅ Full Support | `.github/agents/` + `.github/prompts/` |
-| **Cursor** | ✅ Supported | `.cursor/commands/` |
-| **Codex** | ⚠️ Preview | `.codex/skills/anws-system/` + `.codex/skills/<skill>/` |
-| **OpenCode** | ✅ Supported | `.opencode/commands/` + `.opencode/skills/` |
+| **Claude Code** | ✅ Full Support | `AGENTS.md` + `.claude/commands/` + `.claude/skills/` |
+| **GitHub Copilot** | ✅ Full Support | `AGENTS.md` + `.github/prompts/` + `.github/skills/` |
+| **Cursor** | ✅ Supported | `AGENTS.md` + `.cursor/commands/` + `.cursor/skills/` |
+| **Codex** | ⚠️ Preview | `AGENTS.md` + `.codex/skills/anws-system/` + `.codex/skills/<skill>/` |
+| **OpenCode** | ✅ Supported | `AGENTS.md` + `.opencode/commands/` + `.opencode/skills/` |
 
 ---
 
@@ -234,21 +243,32 @@ your-project/
 │   ├── install-lock.json
 │   ├── changelog/
 │   └── v{N}/
+├── AGENTS.md
 ├── .windsurf/
 │   ├── workflows/
 │   └── skills/
 ├── .agents/
 │   ├── workflows/
 │   └── skills/
-├── AGENTS.md
-├── .cursor/commands/
-├── .claude/commands/
+├── .cursor/
+│   ├── commands/
+│   └── skills/
+├── .claude/
+│   ├── commands/
+│   └── skills/
 ├── .github/
-│   ├── agents/
-│   └── prompts/
+│   ├── prompts/
+│   └── skills/
+├── .opencode/
+│   ├── commands/
+│   └── skills/
 └── .codex/
-    ├── prompts/
-    └── skills/
+    ├── skills/
+    │   ├── anws-system/
+    │   │   ├── SKILL.md
+    │   │   └── references/
+    │   └── <skill>/
+    │       └── SKILL.md
 ```
 
 > One source model. Multiple target layouts. Explicit ownership on disk.

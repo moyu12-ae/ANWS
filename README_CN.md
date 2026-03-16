@@ -14,15 +14,15 @@
 
 # Anws
 
-**Anws** 是一个面向 AI 辅助开发的、以规格与架构为核心的工作流框架。
+**Anws** 是一个面向现代 AI IDE 与 AI 编程工具的、以规格驱动为核心的工作流框架。
 
-它给编码智能体提供的是一条完整路径，而不是一堆零散提示词：
+它帮助团队通过一条受约束的路径，把软件从想法推进到可生产交付：
 
 `PRD -> Architecture -> ADR -> Tasks -> Review -> Code -> Upgrade`
 
-Anws 的核心目标不是“让 AI 更快写代码”，而是让 AI **先理解问题、再设计系统、最后执行实现**。
+Anws 强调 design-first 原则，把上下文沉淀到文件里，并抑制多工具 AI 编程工作流中的架构漂移。
 
-> **一句话**：不要把 AI 当补全器，要给它架构、约束和完整生命周期。
+> **一句话**：一个面向 AI 编程工具的 design-first 工作流框架，把 vibe coding 拉回到面向生产的软件工程轨道。
 
 ## ANWS
 
@@ -178,16 +178,25 @@ anws update
 ## 兼容性
 
 Anws 维护一份统一的工作流 / 技能源，然后将其投影到各个 AI 工具要求的原生目录结构中。
+当前所有已支持 target 都会获得：
+
+- 根目录 `AGENTS.md`
+- target 原生的 `skills/` 投影
+- 一个符合该工具语义的工作流入口层：
+  - `workflows`
+  - `commands`
+  - `prompts`
+  - Codex Preview 的聚合 `skills`
 
 | 环境 | 状态 | 目录布局 |
 | --- | --- | --- |
-| **Windsurf** | ✅ 完整支持 | `.windsurf/workflows/` + `.windsurf/skills/` |
+| **Windsurf** | ✅ 完整支持 | `AGENTS.md` + `.windsurf/workflows/` + `.windsurf/skills/` |
 | **Antigravity** | ✅ 完整支持 | `.agents/workflows/` + `.agents/skills/` + `AGENTS.md` |
-| **Claude Code** | ✅ 完整支持 | `.claude/commands/` |
-| **GitHub Copilot** | ✅ 完整支持 | `.github/agents/` + `.github/prompts/` |
-| **Cursor** | ✅ 支持 | `.cursor/commands/` |
-| **Codex** | ⚠️ Preview | `.codex/skills/anws-system/` + `.codex/skills/<skill>/` |
-| **OpenCode** | ✅ 支持 | `.opencode/commands/` + `.opencode/skills/` |
+| **Claude Code** | ✅ 完整支持 | `AGENTS.md` + `.claude/commands/` + `.claude/skills/` |
+| **GitHub Copilot** | ✅ 完整支持 | `AGENTS.md` + `.github/prompts/` + `.github/skills/` |
+| **Cursor** | ✅ 支持 | `AGENTS.md` + `.cursor/commands/` + `.cursor/skills/` |
+| **Codex** | ⚠️ Preview | `AGENTS.md` + `.codex/skills/anws-system/` + `.codex/skills/<skill>/` |
+| **OpenCode** | ✅ 支持 | `AGENTS.md` + `.opencode/commands/` + `.opencode/skills/` |
 
 ---
 
@@ -241,21 +250,32 @@ your-project/
 │   ├── install-lock.json
 │   ├── changelog/
 │   └── v{N}/
+├── AGENTS.md
 ├── .windsurf/
 │   ├── workflows/
 │   └── skills/
 ├── .agents/
 │   ├── workflows/
 │   └── skills/
-├── AGENTS.md
-├── .cursor/commands/
-├── .claude/commands/
+├── .cursor/
+│   ├── commands/
+│   └── skills/
+├── .claude/
+│   ├── commands/
+│   └── skills/
 ├── .github/
-│   ├── agents/
-│   └── prompts/
+│   ├── prompts/
+│   └── skills/
+├── .opencode/
+│   ├── commands/
+│   └── skills/
 └── .codex/
-    ├── prompts/
-    └── skills/
+    ├── skills/
+    │   ├── anws-system/
+    │   │   ├── SKILL.md
+    │   │   └── references/
+    │   └── <skill>/
+    │       └── SKILL.md
 ```
 
 > 一份统一源模型，多套目标布局，磁盘上显式归属。

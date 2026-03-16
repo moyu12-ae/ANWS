@@ -35,14 +35,14 @@ async function exists(targetPath) {
   }
 }
 
-test('anws init --target windsurf writes only the windsurf projection', async () => {
+test('anws init --target windsurf writes windsurf projection and AGENTS.md', async () => {
   await withTempDir(async (tempDir) => {
     const result = runCliInDir(tempDir, ['init', '--target', 'windsurf']);
 
     assert.equal(result.status, 0, result.stderr || result.stdout);
     assert.equal(await exists(path.join(tempDir, '.windsurf', 'workflows', 'genesis.md')), true);
     assert.equal(await exists(path.join(tempDir, '.windsurf', 'skills', 'spec-writer', 'SKILL.md')), true);
-    assert.equal(await exists(path.join(tempDir, 'AGENTS.md')), false);
+    assert.equal(await exists(path.join(tempDir, 'AGENTS.md')), true);
     assert.equal(await exists(path.join(tempDir, '.agents')), false);
   });
 });
@@ -63,6 +63,7 @@ test('anws init --target windsurf,codex writes multiple target projections and i
     const result = runCliInDir(tempDir, ['init', '--target', 'windsurf,codex']);
 
     assert.equal(result.status, 0, result.stderr || result.stdout);
+    assert.equal(await exists(path.join(tempDir, 'AGENTS.md')), true);
     assert.equal(await exists(path.join(tempDir, '.windsurf', 'workflows', 'genesis.md')), true);
     assert.equal(await exists(path.join(tempDir, '.codex', 'skills', 'anws-system', 'SKILL.md')), true);
     assert.equal(await exists(path.join(tempDir, '.codex', 'skills', 'anws-system', 'references', 'genesis.md')), true);
@@ -76,6 +77,7 @@ test('anws init --target opencode writes command and skill projections', async (
     const result = runCliInDir(tempDir, ['init', '--target', 'opencode']);
 
     assert.equal(result.status, 0, result.stderr || result.stdout);
+    assert.equal(await exists(path.join(tempDir, 'AGENTS.md')), true);
     assert.equal(await exists(path.join(tempDir, '.opencode', 'commands', 'genesis.md')), true);
     assert.equal(await exists(path.join(tempDir, '.opencode', 'skills', 'spec-writer', 'SKILL.md')), true);
     assert.equal(await exists(path.join(tempDir, '.anws', 'install-lock.json')), true);
@@ -108,6 +110,7 @@ test('anws init reports partial success and only writes successful targets into 
     const lock = JSON.parse(await fs.readFile(path.join(tempDir, '.anws', 'install-lock.json'), 'utf8'));
     assert.deepEqual(lock.targets.map((item) => item.targetId), ['codex']);
     assert.deepEqual(lock.lastUpdateSummary.failedTargets, ['windsurf']);
+    assert.equal(await exists(path.join(tempDir, 'AGENTS.md')), true);
     assert.equal(await exists(path.join(tempDir, '.codex', 'skills', 'anws-system', 'SKILL.md')), true);
   });
 });

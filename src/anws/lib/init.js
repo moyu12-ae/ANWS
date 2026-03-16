@@ -35,6 +35,7 @@ async function init() {
   const skipped = [];
   const successfulTargets = [];
   const failedTargets = [];
+  const sessionWrittenFiles = new Set();
 
   for (const targetPlan of targetPlans) {
     const target = getTarget(targetPlan.targetId);
@@ -45,11 +46,11 @@ async function init() {
         forceYes: !!global.__ANWS_FORCE_YES
       })
       : {
-        shouldWriteRootAgents: false,
+        shouldWriteRootAgents: true,
         shouldWarnMigration: false
       };
 
-    const conflicting = await findConflicts(cwd, targetPlan.managedFiles);
+    const conflicting = await findConflicts(cwd, targetPlan.managedFiles, sessionWrittenFiles);
     if (conflicting.length > 0) {
       const confirmed = await askOverwrite(conflicting.length, target.label);
       if (!confirmed) {
@@ -72,6 +73,9 @@ async function init() {
     });
 
     written.push(...result.written);
+    for (const rel of result.written) {
+      sessionWrittenFiles.add(rel);
+    }
     skipped.push(...result.skipped);
     successfulTargets.push(summarizeTargetState(targetPlan, cliVersion));
 
@@ -122,9 +126,12 @@ async function init() {
  * 找出 cwd 中已存在的托管文件列表。
  * @returns {Promise<string[]>} 已存在的托管文件相对路径数组
  */
-async function findConflicts(cwd, managedFiles) {
+async function findConflicts(cwd, managedFiles, sessionWrittenFiles = new Set()) {
   const conflicts = [];
   for (const rel of managedFiles) {
+    if (sessionWrittenFiles.has(rel)) {
+      continue;
+    }
     const abs = path.join(cwd, rel);
     const exists = await pathExists(abs);
     if (exists) conflicts.push(rel);

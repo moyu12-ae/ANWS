@@ -21,14 +21,15 @@ test('legacy MANAGED_FILES stays aligned with antigravity target', () => {
 test('windsurf managed files map workflows and skills into .windsurf', () => {
   const files = buildManagedFiles('windsurf');
 
+  assert(files.includes('AGENTS.md'));
   assert(files.includes('.windsurf/workflows/genesis.md'));
   assert(files.includes('.windsurf/skills/spec-writer/SKILL.md'));
-  assert(!files.includes('AGENTS.md'));
 });
 
 test('codex managed files fold workflows into anws-system skill and keep standalone skills', () => {
   const files = buildManagedFiles('codex');
 
+  assert(files.includes('AGENTS.md'));
   assert(files.includes('.codex/skills/anws-system/SKILL.md'));
   assert(files.includes('.codex/skills/anws-system/references/genesis.md'));
   assert(files.includes('.codex/skills/spec-writer/SKILL.md'));
@@ -37,6 +38,7 @@ test('codex managed files fold workflows into anws-system skill and keep standal
 test('opencode managed files include commands and skills', () => {
   const files = buildManagedFiles('opencode');
 
+  assert(files.includes('AGENTS.md'));
   assert(files.includes('.opencode/commands/genesis.md'));
   assert(files.includes('.opencode/skills/spec-writer/SKILL.md'));
 });
@@ -56,10 +58,11 @@ test('buildProjectionEntries uses target projection metadata for cursor commands
   assert(entries.some((item) => item.outputPath === '.cursor/skills/spec-writer/SKILL.md'));
 });
 
-test('buildManagedManifest groups ownership by target and preserves antigravity root agent file', () => {
+test('buildManagedManifest groups ownership by target and preserves root agent file entries', () => {
   const manifest = buildManagedManifest(['antigravity', 'codex']);
 
   assert(manifest.some((item) => item.targetId === 'antigravity' && item.outputPath === 'AGENTS.md'));
+  assert(manifest.some((item) => item.targetId === 'codex' && item.outputPath === 'AGENTS.md'));
   assert(manifest.some((item) => item.targetId === 'codex' && item.outputPath === '.codex/skills/anws-system/SKILL.md'));
   assert(manifest.some((item) => item.targetId === 'codex' && item.outputPath === '.codex/skills/anws-system/references/genesis.md'));
   assert(manifest.every((item) => typeof item.ownershipKey === 'string' && item.ownershipKey.length > 0));
@@ -74,7 +77,7 @@ test('buildManagedManifest rejects unsupported targets with supported list', () 
 
 test('user protected files are target-aware', () => {
   assert.deepEqual(USER_PROTECTED_FILES, ['AGENTS.md']);
-  assert.deepEqual(buildManagedFiles('windsurf').filter((item) => USER_PROTECTED_FILES.includes(item)), []);
+  assert.deepEqual(buildManagedFiles('windsurf').filter((item) => USER_PROTECTED_FILES.includes(item)), ['AGENTS.md']);
 });
 
 test('resource registry exposes workflows and skills', () => {
@@ -87,13 +90,13 @@ test('resource registry exposes workflows and skills', () => {
 
 test('all supported targets expose the expected projection shapes', () => {
   const expectedByTarget = {
-    windsurf: ['.windsurf/workflows/genesis.md', '.windsurf/skills/spec-writer/SKILL.md'],
+    windsurf: ['AGENTS.md', '.windsurf/workflows/genesis.md', '.windsurf/skills/spec-writer/SKILL.md'],
     antigravity: ['AGENTS.md', '.agents/workflows/genesis.md', '.agents/skills/spec-writer/SKILL.md'],
-    cursor: ['.cursor/commands/genesis.md', '.cursor/skills/spec-writer/SKILL.md'],
-    claude: ['.claude/commands/genesis.md', '.claude/skills/spec-writer/SKILL.md'],
-    copilot: ['.github/prompts/genesis.prompt.md', '.github/skills/spec-writer/SKILL.md'],
-    codex: ['.codex/skills/anws-system/SKILL.md', '.codex/skills/anws-system/references/genesis.md', '.codex/skills/spec-writer/SKILL.md'],
-    opencode: ['.opencode/commands/genesis.md', '.opencode/skills/spec-writer/SKILL.md']
+    cursor: ['AGENTS.md', '.cursor/commands/genesis.md', '.cursor/skills/spec-writer/SKILL.md'],
+    claude: ['AGENTS.md', '.claude/commands/genesis.md', '.claude/skills/spec-writer/SKILL.md'],
+    copilot: ['AGENTS.md', '.github/prompts/genesis.prompt.md', '.github/skills/spec-writer/SKILL.md'],
+    codex: ['AGENTS.md', '.codex/skills/anws-system/SKILL.md', '.codex/skills/anws-system/references/genesis.md', '.codex/skills/spec-writer/SKILL.md'],
+    opencode: ['AGENTS.md', '.opencode/commands/genesis.md', '.opencode/skills/spec-writer/SKILL.md']
   };
 
   for (const target of listTargets()) {

@@ -7,7 +7,7 @@ const TARGETS = {
   windsurf: {
     id: 'windsurf',
     label: 'Windsurf',
-    rootAgentFile: false,
+    rootAgentFile: true,
     projectionTypes: {
       workflow: ['workflows'],
       skill: ['skills']
@@ -35,7 +35,7 @@ const TARGETS = {
   cursor: {
     id: 'cursor',
     label: 'Cursor',
-    rootAgentFile: false,
+    rootAgentFile: true,
     projectionTypes: {
       workflow: ['commands'],
       skill: ['skills']
@@ -49,7 +49,7 @@ const TARGETS = {
   claude: {
     id: 'claude',
     label: 'Claude',
-    rootAgentFile: false,
+    rootAgentFile: true,
     projectionTypes: {
       workflow: ['commands'],
       skill: ['skills']
@@ -63,7 +63,7 @@ const TARGETS = {
   copilot: {
     id: 'copilot',
     label: 'GitHub Copilot',
-    rootAgentFile: false,
+    rootAgentFile: true,
     projectionTypes: {
       workflow: ['prompts'],
       skill: ['skills']
@@ -77,7 +77,7 @@ const TARGETS = {
   codex: {
     id: 'codex',
     label: 'Codex (Preview)',
-    rootAgentFile: false,
+    rootAgentFile: true,
     projectionTypes: {
       workflow: ['skills'],
       skill: ['skills']
@@ -90,7 +90,7 @@ const TARGETS = {
   opencode: {
     id: 'opencode',
     label: 'OpenCode',
-    rootAgentFile: false,
+    rootAgentFile: true,
     projectionTypes: {
       workflow: ['commands'],
       skill: ['skills']
