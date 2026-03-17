@@ -14,12 +14,18 @@ const KEY = {
   ARROW_LEFT: '\u001b[D'
 };
 
-async function selectMultiple({ message, options, initialSelectedIndexes = [] }) {
+async function selectMultiple({ message, options, initialSelectedIndexes = [], lockedIndexes = [] }) {
+  const normalizedLockedIndexes = new Set(lockedIndexes.filter((index) => index >= 0 && index < options.length));
+  const normalizedInitialSelectedIndexes = Array.from(new Set([
+    ...initialSelectedIndexes.filter((index) => index >= 0 && index < options.length),
+    ...normalizedLockedIndexes
+  ]));
+
   if (!process.stdin.isTTY || !process.stdout.isTTY) {
-    return initialSelectedIndexes.map((index) => options[index]).filter(Boolean);
+    return normalizedInitialSelectedIndexes.map((index) => options[index]).filter(Boolean);
   }
 
-  const selected = new Set(initialSelectedIndexes.filter((index) => index >= 0 && index < options.length));
+  const selected = new Set(normalizedInitialSelectedIndexes);
   const state = {
     cursorIndex: 0,
     errorMessage: ''
@@ -49,6 +55,10 @@ async function selectMultiple({ message, options, initialSelectedIndexes = [] })
       }
 
       if (key === KEY.SPACE) {
+        if (normalizedLockedIndexes.has(state.cursorIndex)) {
+          state.errorMessage = 'Already installed targets are locked. You can only add more targets.';
+          return 'render';
+        }
         if (selected.has(state.cursorIndex)) {
           selected.delete(state.cursorIndex);
         } else {
@@ -121,7 +131,8 @@ function renderMultiSelect({ message, options, selected, cursorIndex, errorMessa
     const isSelected = selected.has(index);
     const cursor = isActive ? colorize('❯', PALETTE.brand) : ' ';
     const mark = isSelected ? colorize('◉', PALETTE.brand) : colorize('◌', PALETTE.muted);
-    const label = isActive ? colorize(option.label, PALETTE.ink) : option.label;
+    const labelText = option.locked ? `${option.label} ${colorize('(installed)', PALETTE.muted)}` : option.label;
+    const label = isActive ? colorize(labelText, PALETTE.ink) : labelText;
     return `${cursor} ${mark} ${label}`;
   });
 
@@ -133,7 +144,7 @@ function renderMultiSelect({ message, options, selected, cursorIndex, errorMessa
         '',
         ...optionLines,
         '',
-        errorMessage ? colorize(errorMessage, c.yellow) : colorize('Choose any set of targets, then press Enter.', PALETTE.muted)
+        errorMessage ? colorize(errorMessage, c.yellow) : colorize('Choose targets to add. Installed targets stay selected.', PALETTE.muted)
       ],
       accent: PALETTE.brand,
       borderTone: PALETTE.muted,

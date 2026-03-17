@@ -92,13 +92,16 @@ graph TD
   - **依赖**: T2.1.2, T4.1.1, T4.1.2
 
 - [ ] **T1.2.2** [REQ-001]: 修复 `init` 对根目录 `AGENTS.md` 的整文件覆盖问题
-  - **描述**: 让 `src/anws/lib/init.js` 在写入根目录 `AGENTS.md` 时复用与 `update` 一致的 merge / preserve 语义，禁止整文件覆盖导致 AUTO 区块丢失。
+  - **描述**: 让 `src/anws/lib/init.js` 在写入根目录 `AGENTS.md` 时复用与 `update` 一致的 merge / preserve 语义，禁止整文件覆盖导致 AUTO 区块丢失；同时在再次执行 `init` 时复用已有安装状态，使已安装 target 在选择器中被自动标注且不可取消，用户仅能额外新增 target。
   - **输入**: `src/anws/lib/agents.js` 现有 merge 逻辑；T5.1.1 的共享根文件写入策略。
   - **输出**: 更新后的 `src/anws/lib/init.js`。
   - **验收标准**:
     - Given 项目根目录已存在 `AGENTS.md`
     - When 用户再次执行 `anws init`
     - Then 不得发生整文件覆盖
+    - Given 项目中已存在通过 `init` 安装过的 targets
+    - When 用户再次执行 `anws init`
+    - Then 已安装 target 必须自动保留在最终选择集合中，且不可通过交互取消
     - Given 现有 `AGENTS.md` 包含 AUTO 区块
     - When `init` 执行
     - Then AUTO 区块内容必须被保留或按模板规则合并
@@ -189,13 +192,16 @@ graph TD
 ### Phase 1: Foundation
 
 - [x] **T4.1.1** [REQ-005]: 扩展 install-lock schema 与 state summary 到 v7 目标矩阵
-  - **描述**: 确认 `src/anws/lib/install-state.js` 能稳定记录新增 targets 的 `managedFiles`、`ownership`、`installedVersion` 与 `lastUpdateSummary`，并为 fallback 扫描后的 lock 重建提供一致状态模型。
+  - **描述**: 确认 `src/anws/lib/install-state.js` 能稳定记录新增 targets 的 `managedFiles`、`ownership`、`installedVersion` 与 `lastUpdateSummary`，并为 fallback 扫描后的 lock 重建以及重复 `init` 场景下的状态保留提供一致状态模型。
   - **输入**: T2.1.2 的 projection outputs；现有 install-lock schema。
   - **输出**: 更新后的 `src/anws/lib/install-state.js`。
   - **验收标准**:
     - Given 新老 targets 并存
     - When 写入 `.anws/install-lock.json`
     - Then lock 中的 target 列表、ownership 与 managedFiles 不重复且可解释
+    - Given 项目中已有通过 `init` 安装的 targets 且用户在再次 `init` 时新增更多 targets
+    - When 初始化完成并写入 `.anws/install-lock.json`
+    - Then lock 必须保留既有 targets，并吸收本次新增成功 targets，不得因交互选择丢失历史安装状态
     - Given lock 缺失或损坏但目录扫描已识别 targets
     - When update 进入实际执行路径
     - Then 重建后的 lock 结构仍满足同样的去重与可解释性要求
@@ -225,13 +231,16 @@ graph TD
 ### Phase 1: Core
 
 - [ ] **T5.1.1** [REQ-001]: 统一 `init` / `update` 的共享根文件写入策略
-  - **描述**: 更新 `src/anws/lib/copy.js` 与相关调用方，使 `AGENTS.md` 在 `init` / `update` 中采用一致的 merge / preserve 语义，而不是分别走不同路径。
+  - **描述**: 更新 `src/anws/lib/copy.js` 与相关调用方，使 `AGENTS.md` 在 `init` / `update` 中采用一致的 merge / preserve 语义，而不是分别走不同路径；同时让 `init` 在进入写入前复用共享安装状态判断，避免忽略已安装 target 并产生与 lock 脱节的交互选择。
   - **输入**: `src/anws/lib/agents.js` 的 merge 逻辑；`src/anws/lib/copy.js` 当前写入链路。
   - **输出**: 更新后的 `src/anws/lib/copy.js`；必要时扩展 `agents.js` 导出能力。
   - **验收标准**:
     - Given `init` 与 `update` 都可能触达 `AGENTS.md`
     - When 执行写入
     - Then 两者都复用同一套共享根文件策略
+    - Given 项目中已存在 install state
+    - When 再次执行 `init`
+    - Then `init` 的目标选择阶段必须消费该状态并与最终写入结果保持一致
     - Given 目标项目已有自定义 `AGENTS.md`
     - When 执行写入
     - Then 不得无提示地整文件覆盖
@@ -299,13 +308,16 @@ graph TD
   - **依赖**: T1.2.1, T5.1.2
 
 - [ ] **T6.2.2** [REQ-001]: 新增 `AGENTS.md` init 保留语义集成测试
-  - **描述**: 为 `src/anws/test/init.integration.test.js` 增加已有根 `AGENTS.md` 场景，验证 AUTO 区块不会在 `init` 中丢失。
+  - **描述**: 为 `src/anws/test/init.integration.test.js` 增加已有根 `AGENTS.md` 与重复 `init` 场景，验证 AUTO 区块不会在 `init` 中丢失，且已安装 target 会被锁定保留、用户仍可新增 target。
   - **输入**: T1.2.2 的实现产物。
   - **输出**: 更新后的 init 集成测试。
   - **验收标准**:
     - Given 项目中已有包含 AUTO 区块的 `AGENTS.md`
     - When 再次执行 `anws init`
     - Then AUTO 区块仍存在，且根文件未被不可解释地整文件替换
+    - Given 项目中已安装 `A` target
+    - When 用户再次执行 `anws init` 并新增选择 `B` target
+    - Then 结果必须同时保留 `A` 并安装 `B`，且 `.anws/install-lock.json` 与最终落盘状态一致
   - **验证类型**: 集成测试
   - **估时**: 3h
   - **依赖**: T1.2.2
@@ -323,11 +335,11 @@ graph TD
   - **依赖**: T6.1.1, T6.1.2
 
 - [ ] **INT-S2** [MILESTONE]: S2 集成验证 — Update + Root Safety
-  - **描述**: 验证 `update` / `update --check` 与 `init` 下的 `AGENTS.md` 安全语义在 v7 中成立。
+  - **描述**: 验证 `update` / `update --check` 与 `init` 下的 `AGENTS.md` 安全语义、重复 `init` 的 target 保留语义在 v7 中成立。
   - **验收标准**:
     - Given 多目标项目与已有根 `AGENTS.md`
     - When 执行 `init` / `update`
-    - Then target 扫描、更新范围与 AGENTS 保留语义全部正确
+    - Then target 扫描、更新范围、重复 `init` 的 target 保留行为与 AGENTS 保留语义全部正确
   - **依赖**: T6.2.1, T6.2.2
 
 ---

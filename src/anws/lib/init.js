@@ -15,10 +15,11 @@ const { success, warn, info, fileLine, skippedLine, blank, logo, section } = req
 async function init() {
   const cwd = process.cwd();
   logo();
-  const targets = await selectTargets();
+  const installState = await detectInstallState(cwd);
+  const retainedTargetIds = await resolveRetainedTargetIds(cwd, installState);
+  const targets = await selectTargets(installState, retainedTargetIds);
   const targetIds = Array.from(new Set(targets.map((item) => item.id)));
   const targetPlans = buildProjectionPlan(targetIds);
-  const installState = await detectInstallState(cwd);
   const srcAgents = ROOT_AGENTS_FILE;
   const cliVersion = require(path.join(__dirname, '..', 'package.json')).version;
 
@@ -40,6 +41,7 @@ async function init() {
 
   for (const targetPlan of targetPlans) {
     const target = getTarget(targetPlan.targetId);
+    const targetAlreadyInstalled = retainedTargetIds.includes(target.id);
     const rootAgentsExists = await pathExists(path.join(cwd, 'AGENTS.md'));
     const agentsDecision = target.id === 'antigravity'
       ? await resolveAgentsInstall({
@@ -60,7 +62,11 @@ async function init() {
       agentsUpdatePlan = planAgentsUpdate({ templateContent, existingContent });
     }
 
-    const conflicting = await findConflicts(cwd, targetPlan.managedFiles, sessionWrittenFiles);
+    const conflicting = await findConflicts(
+      cwd,
+      targetAlreadyInstalled ? [] : targetPlan.managedFiles.filter((rel) => rel !== 'AGENTS.md'),
+      sessionWrittenFiles
+    );
     if (conflicting.length > 0) {
       const confirmed = await askOverwrite(conflicting.length, target.label);
       if (!confirmed) {
@@ -214,22 +220,77 @@ function printSummary(files, skipped = [], action) {
   }
 }
 
-async function selectTargets() {
+async function selectTargets(installState, retainedTargetIds = []) {
+  const installedTargetIds = new Set(retainedTargetIds);
+
   if (global.__ANWS_TARGET_IDS && global.__ANWS_TARGET_IDS.length > 0) {
-    return global.__ANWS_TARGET_IDS.map((targetId) => getTarget(targetId));
+    return Array.from(new Set([
+      ...retainedTargetIds,
+      ...global.__ANWS_TARGET_IDS
+    ])).map((targetId) => getTarget(targetId));
   }
 
   if (!process.stdin.isTTY) {
-    return [getTarget('antigravity')];
+    return retainedTargetIds.length > 0
+      ? retainedTargetIds.map((targetId) => getTarget(targetId))
+      : [getTarget('antigravity')];
   }
 
   const targets = listTargets();
+  const lockedIndexes = [];
+  const initialSelectedIndexes = [];
+
+  for (const [index, target] of targets.entries()) {
+    if (installedTargetIds.has(target.id)) {
+      lockedIndexes.push(index);
+      initialSelectedIndexes.push(index);
+    }
+  }
+
+  if (initialSelectedIndexes.length === 0) {
+    const antigravityIndex = targets.findIndex((target) => target.id === 'antigravity');
+    if (antigravityIndex >= 0) {
+      initialSelectedIndexes.push(antigravityIndex);
+    }
+  }
 
   return selectMultiple({
     message: 'Choose your target AI IDEs:',
-    options: targets.map((target) => ({ label: target.label, value: target.id })),
-    initialSelectedIndexes: [1]
+    options: targets.map((target) => ({
+      label: target.label,
+      value: target.id,
+      locked: installedTargetIds.has(target.id)
+    })),
+    initialSelectedIndexes,
+    lockedIndexes
   }).then((selectedOptions) => selectedOptions.map((option) => getTarget(option.value)));
+}
+
+async function resolveRetainedTargetIds(cwd, installState) {
+  if (!installState.needsFallback && !installState.drift.hasDrift) {
+    return installState.selectedTargets;
+  }
+
+  const retainedTargetIds = [];
+
+  for (const targetId of installState.selectedTargets) {
+    const [targetPlan] = buildProjectionPlan([targetId]);
+    const managedFiles = (targetPlan?.managedFiles || []).filter((rel) => rel !== 'AGENTS.md');
+    if (managedFiles.length === 0) {
+      retainedTargetIds.push(targetId);
+      continue;
+    }
+
+    const managedExists = await Promise.all(
+      managedFiles.map((rel) => pathExists(path.join(cwd, rel)))
+    );
+
+    if (managedExists.every(Boolean)) {
+      retainedTargetIds.push(targetId);
+    }
+  }
+
+  return retainedTargetIds;
 }
 
 function printNextSteps(targets) {

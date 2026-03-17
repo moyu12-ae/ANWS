@@ -95,6 +95,39 @@ test('anws init dedupes already selected targets in install-lock', async () => {
   });
 });
 
+test('anws init preserves existing installed targets when adding a new target via --target', async () => {
+  await withTempDir(async (tempDir) => {
+    const firstInit = runCliInDir(tempDir, ['init', '--target', 'windsurf']);
+    assert.equal(firstInit.status, 0, firstInit.stderr || firstInit.stdout);
+
+    const secondInit = runCliInDir(tempDir, ['init', '--target', 'opencode']);
+    assert.equal(secondInit.status, 0, secondInit.stderr || secondInit.stdout);
+
+    assert.equal(await exists(path.join(tempDir, '.windsurf', 'workflows', 'genesis.md')), true);
+    assert.equal(await exists(path.join(tempDir, '.opencode', 'commands', 'genesis.md')), true);
+
+    const lock = JSON.parse(await fs.readFile(path.join(tempDir, '.anws', 'install-lock.json'), 'utf8'));
+    assert.deepEqual(lock.targets.map((item) => item.targetId), ['opencode', 'windsurf']);
+    assert.deepEqual(lock.lastUpdateSummary.successfulTargets, ['windsurf', 'opencode']);
+  });
+});
+
+test('anws init preserves scanned targets when install-lock is missing and a new target is added', async () => {
+  await withTempDir(async (tempDir) => {
+    const firstInit = runCliInDir(tempDir, ['init', '--target', 'windsurf']);
+    assert.equal(firstInit.status, 0, firstInit.stderr || firstInit.stdout);
+
+    await fs.rm(path.join(tempDir, '.anws', 'install-lock.json'), { force: true });
+
+    const secondInit = runCliInDir(tempDir, ['init', '--target', 'opencode']);
+    assert.equal(secondInit.status, 0, secondInit.stderr || secondInit.stdout);
+    assert.match(secondInit.stdout, /Install lock missing or unreadable\. Falling back to scanned target state\./);
+
+    const lock = JSON.parse(await fs.readFile(path.join(tempDir, '.anws', 'install-lock.json'), 'utf8'));
+    assert.deepEqual(lock.targets.map((item) => item.targetId), ['opencode', 'windsurf']);
+  });
+});
+
 test('anws init reports partial success and only writes successful targets into install-lock', async () => {
   await withTempDir(async (tempDir) => {
     await fs.mkdir(path.join(tempDir, '.windsurf', 'workflows'), { recursive: true });

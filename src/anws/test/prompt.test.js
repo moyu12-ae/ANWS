@@ -23,7 +23,7 @@ test('renderMultiSelect shows cursor and multi-selection markers', () => {
   assert.match(frame, /◉ Windsurf/);
   assert.match(frame, /❯ ◌ Codex \(Preview\)/);
   assert.match(frame, /Space Toggle/);
-  assert.match(frame, /Choose any set of targets, then press Enter/);
+  assert.match(frame, /Choose targets to add\. Installed targets stay selected\./);
 });
 
 test('renderMultiSelect shows inline validation when nothing is selected', () => {
