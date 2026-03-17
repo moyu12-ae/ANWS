@@ -89,7 +89,7 @@ const TARGETS = {
   },
   trae: {
     id: 'trae',
-    label: 'Trae',
+    label: 'Trae (Preview)',
     rootAgentFile: true,
     projectionTypes: {
       workflow: ['skills'],
