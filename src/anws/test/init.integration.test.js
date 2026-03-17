@@ -115,3 +115,34 @@ test('anws init reports partial success and only writes successful targets into 
   });
 });
 
+test('anws init preserves existing AGENTS auto block when overwriting managed files', async () => {
+  await withTempDir(async (tempDir) => {
+    const existingAgents = [
+      '# AGENTS.md - AI 协作协议',
+      '',
+      '<!-- AUTO:BEGIN — 项目状态保留区（升级时唯一保留的部分，请勿手动修改区块边界） -->',
+      '## 📍 当前状态 (由 Workflow 自动更新)',
+      '',
+      '- **最新架构版本**: `.anws/v999`',
+      '- **活动任务清单**: `custom/tasks.md`',
+      '<!-- AUTO:END -->',
+      '',
+      '## 自定义补充',
+      '',
+      '保留我的自定义内容。'
+    ].join('\n');
+
+    await fs.writeFile(path.join(tempDir, 'AGENTS.md'), `${existingAgents}\n`, 'utf8');
+
+    const result = runCliInDir(tempDir, ['init', '--target', 'windsurf', '--yes']);
+
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+
+    const finalAgents = await fs.readFile(path.join(tempDir, 'AGENTS.md'), 'utf8');
+    assert.match(finalAgents, /\*\*最新架构版本\*\*: `\.anws\/v999`/);
+    assert.match(finalAgents, /\*\*活动任务清单\*\*: `custom\/tasks\.md`/);
+    assert.match(finalAgents, /<!-- AUTO:BEGIN/);
+    assert.match(finalAgents, /<!-- AUTO:END -->/);
+  });
+});
+

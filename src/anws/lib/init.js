@@ -1,9 +1,10 @@
 'use strict';
 
 const path = require('node:path');
+const fs = require('node:fs/promises');
 const { buildProjectionPlan } = require('./manifest');
 const { getTarget, listTargets } = require('./adapters');
-const { resolveAgentsInstall, printLegacyMigrationWarning, pathExists } = require('./agents');
+const { planAgentsUpdate, resolveAgentsInstall, printLegacyMigrationWarning, pathExists } = require('./agents');
 const { ensureChangelogDir } = require('./changelog');
 const { ROOT_AGENTS_FILE, resolveCanonicalSource } = require('./resources');
 const { writeTargetFiles } = require('./copy');
@@ -39,6 +40,7 @@ async function init() {
 
   for (const targetPlan of targetPlans) {
     const target = getTarget(targetPlan.targetId);
+    const rootAgentsExists = await pathExists(path.join(cwd, 'AGENTS.md'));
     const agentsDecision = target.id === 'antigravity'
       ? await resolveAgentsInstall({
         cwd,
@@ -47,8 +49,16 @@ async function init() {
       })
       : {
         shouldWriteRootAgents: true,
-        shouldWarnMigration: false
+        shouldWarnMigration: false,
+        rootExists: rootAgentsExists
       };
+
+    let agentsUpdatePlan = null;
+    if (agentsDecision.shouldWriteRootAgents && agentsDecision.rootExists) {
+      const templateContent = await fs.readFile(srcAgents, 'utf8');
+      const existingContent = await fs.readFile(path.join(cwd, 'AGENTS.md'), 'utf8');
+      agentsUpdatePlan = planAgentsUpdate({ templateContent, existingContent });
+    }
 
     const conflicting = await findConflicts(cwd, targetPlan.managedFiles, sessionWrittenFiles);
     if (conflicting.length > 0) {
@@ -69,6 +79,7 @@ async function init() {
       protectedFiles: targetPlan.userProtectedFiles,
       srcAgents,
       shouldWriteRootAgents: agentsDecision.shouldWriteRootAgents,
+      agentsUpdatePlan,
       resolveCanonicalSource
     });
 
