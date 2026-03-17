@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Version](https://img.shields.io/badge/version-v2.0.0-7FB5B6)](https://github.com/Haaaiawd/Anws/releases)
-[![Targets](https://img.shields.io/badge/Targets-Windsurf%20%7C%20Claude%20Code%20%7C%20Copilot%20%7C%20Cursor%20%7C%20Codex%20Preview%20%7C%20OpenCode-blueviolet)](https://github.com/Haaaiawd/Anws)
+[![Targets](https://img.shields.io/badge/Targets-Windsurf%20%7C%20Claude%20Code%20%7C%20Copilot%20%7C%20Cursor%20%7C%20Codex%20Preview%20%7C%20OpenCode%20%7C%20Trae%20%7C%20Qoder%20%7C%20Kilo%20Code-blueviolet)](https://github.com/Haaaiawd/Anws)
 
 [English](./README.md) | [中文](./README_CN.md)
 
@@ -79,8 +79,13 @@ Anws addresses those problems with:
 - **Codex projection strategy update**
   - Codex is now treated as **Preview**
   - because Codex prompts are no longer available, Anws now packages workflow guidance into `.codex/skills/anws-system/`
-  - `/quickstart` maps to `SKILL.md`
-  - the rest of the workflow docs are exposed as `references/*.md` under the same aggregated skill
+  - `SKILL.md` is the navigation shell for the bundle
+  - workflow details, including `/quickstart`, now live under `references/*.md`
+
+- **Trae / Qoder / Kilo Code support**
+  - Trae follows the same skills-only bundle family as Codex via `.trae/skills/anws-system/`
+  - Qoder adds native `.qoder/commands/` + `.qoder/skills/`
+  - Kilo Code adds native `.kilocode/workflows/` + `.kilocode/skills/`
 
 - **OpenCode support**
   - adds native projection support for `.opencode/commands/` and `.opencode/skills/`
@@ -135,6 +140,7 @@ anws update
 - **State source**
   - `anws update` reads `.anws/install-lock.json`
   - if the lock is missing or invalid, it falls back to directory scan
+  - a real `anws update` can rebuild `.anws/install-lock.json` from detected targets when fallback is active
 
 - **`AGENTS.md` behavior**
   - marker-based file -> update stable sections, preserve `AUTO` block
@@ -179,7 +185,7 @@ Every supported target now receives:
   - `workflows`
   - `commands`
   - `prompts`
-  - aggregated `skills` for Codex Preview
+  - aggregated `skills` for Codex / Trae skills-only bundles
 
 | Environment | Status | Layout |
 | --- | --- | --- |
@@ -190,6 +196,9 @@ Every supported target now receives:
 | **Cursor** | ✅ Supported | `AGENTS.md` + `.cursor/commands/` + `.cursor/skills/` |
 | **Codex** | ⚠️ Preview | `AGENTS.md` + `.codex/skills/anws-system/` + `.codex/skills/<skill>/` |
 | **OpenCode** | ✅ Supported | `AGENTS.md` + `.opencode/commands/` + `.opencode/skills/` |
+| **Trae** | ✅ Supported | `AGENTS.md` + `.trae/skills/anws-system/` + `.trae/skills/<skill>/` |
+| **Qoder** | ✅ Supported | `AGENTS.md` + `.qoder/commands/` + `.qoder/skills/` |
+| **Kilo Code** | ✅ Supported | `AGENTS.md` + `.kilocode/workflows/` + `.kilocode/skills/` |
 
 ---
 
@@ -262,6 +271,19 @@ your-project/
 ├── .opencode/
 │   ├── commands/
 │   └── skills/
+├── .qoder/
+│   ├── commands/
+│   └── skills/
+├── .kilocode/
+│   ├── workflows/
+│   └── skills/
+├── .trae/
+│   └── skills/
+│       ├── anws-system/
+│       │   ├── SKILL.md
+│       │   └── references/
+│       └── <skill>/
+│           └── SKILL.md
 └── .codex/
     ├── skills/
     │   ├── anws-system/

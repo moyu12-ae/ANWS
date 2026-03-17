@@ -23,12 +23,24 @@ OPTIONS
   -v, --version   Print version number
   -h, --help      Show this help message
   --target        Target AI IDE(s) for \`init\`, comma-separated (${TARGET_IDS.join(', ')})
-  --check         Preview grouped update diffs without writing files or install-lock state
+  --check         Preview grouped update diffs without writing files or rebuilding install-lock state
+
+SUPPORTED TARGETS
+  windsurf     workflows + skills
+  antigravity  workflows + skills
+  cursor       commands + skills
+  claude       commands + skills
+  copilot      prompts + skills
+  codex        preview, skills-only bundle via anws-system
+  opencode     commands + skills
+  trae         skills-only bundle via anws-system
+  qoder        commands + skills
+  kilo         workflows + skills
 
 EXAMPLES
   anws init                       # Choose target IDEs and install their managed workflow projections
-  anws init --target windsurf,codex
-  anws update                     # Update all matched targets from install-lock or directory scan
+  anws init --target windsurf,codex,opencode
+  anws update                     # Update all matched targets from install-lock or directory scan fallback
   anws update --check             # Preview grouped changes per target without writing files
 `.trimStart();
 

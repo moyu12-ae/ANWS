@@ -59,7 +59,7 @@ graph TD
 
 ### Phase 1: Foundation
 
-- [ ] **T1.1.1** [REQ-006]: 同步 CLI 对 v7 目标矩阵的帮助文案与展示名称
+- [x] **T1.1.1** [REQ-006]: 同步 CLI 对 v7 目标矩阵的帮助文案与展示名称
   - **描述**: 更新 `src/anws/bin/cli.js` 与相关输出模块，使 `Copilot / Codex / OpenCode / Trae / Qoder / Kilo Code` 的显示名、说明、示例命令和支持矩阵与 v7 一致。
   - **输入**: `.anws/v7/01_PRD.md` 的 US06；`.anws/v7/02_ARCHITECTURE_OVERVIEW.md` 的目标投影矩阵；`src/anws/bin/cli.js` 当前帮助输出。
   - **输出**: 更新后的 `src/anws/bin/cli.js`；必要时同步 `src/anws/lib/output.js`。
@@ -170,7 +170,7 @@ graph TD
   - **估时**: 3h
   - **依赖**: 无
 
-- [ ] **T3.1.2** [REQ-006]: 同步 README / README_CN / `src/anws/README*.md` 到 v7 矩阵
+- [x] **T3.1.2** [REQ-006]: 同步 README / README_CN / `src/anws/README*.md` 到 v7 矩阵
   - **描述**: 更新文档中的目录树、目标矩阵、update 说明、lock 说明和 `AGENTS.md` 安全语义，并明确 `skills-only` 目标的 `anws-system/SKILL.md + references/*.md` 结构。
   - **输入**: T1.1.1 的 CLI 文案；T1.2.1 的 update 行为；T1.2.2 的 AGENTS 保留语义。
   - **输出**: 更新后的仓库文档与包内镜像文档。

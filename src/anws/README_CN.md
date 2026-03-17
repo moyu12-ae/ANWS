@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Version](https://img.shields.io/badge/version-v2.0.0-7FB5B6)](https://github.com/Haaaiawd/Anws/releases)
-[![Targets](https://img.shields.io/badge/Targets-Windsurf%20%7C%20Claude%20Code%20%7C%20Copilot%20%7C%20Cursor%20%7C%20Codex%20Preview%20%7C%20OpenCode-blueviolet)](https://github.com/Haaaiawd/Anws)
+[![Targets](https://img.shields.io/badge/Targets-Windsurf%20%7C%20Claude%20Code%20%7C%20Copilot%20%7C%20Cursor%20%7C%20Codex%20Preview%20%7C%20OpenCode%20%7C%20Trae%20%7C%20Qoder%20%7C%20Kilo%20Code-blueviolet)](https://github.com/Haaaiawd/Anws)
 
 [English](./README.md) | [中文](./README_CN.md)
 
@@ -86,8 +86,13 @@ Anws 用以下机制应对这些问题：
 - **Codex 投放策略调整**
   - Codex 现在标记为 **Preview**
   - 由于 Codex 已取消 prompts，Anws 改为将工作流指导聚合到 `.codex/skills/anws-system/`
-  - `/quickstart` 对应 `SKILL.md`
-  - 其他 workflow 文档作为同一聚合 skill 下的 `references/*.md`
+  - `SKILL.md` 是该 bundle 的导航壳
+  - 包括 `/quickstart` 在内的 workflow 明细统一放在 `references/*.md`
+
+- **Trae / Qoder / Kilo Code 支持**
+  - Trae 与 Codex 同属 skills-only bundle 家族，投放到 `.trae/skills/anws-system/`
+  - Qoder 新增 `.qoder/commands/` + `.qoder/skills/`
+  - Kilo Code 新增 `.kilocode/workflows/` + `.kilocode/skills/`
 
 - **OpenCode 支持**
   - 新增 `.opencode/commands/` 与 `.opencode/skills/` 原生投放
@@ -142,6 +147,7 @@ anws update
 - **状态来源**
   - `anws update` 优先读取 `.anws/install-lock.json`
   - 若 lock 缺失或损坏，则回退为目录扫描
+  - 当 fallback 生效时，真实执行 `anws update` 可以根据检测结果重建 `.anws/install-lock.json`
 
 - **`AGENTS.md` 更新规则**
   - 带标识文件 -> 更新稳定区，保留 `AUTO` 区块
@@ -186,7 +192,7 @@ Anws 维护一份统一的工作流 / 技能源，然后将其投影到各个 AI
   - `workflows`
   - `commands`
   - `prompts`
-  - Codex Preview 的聚合 `skills`
+  - Codex / Trae skills-only bundle 的聚合 `skills`
 
 | 环境 | 状态 | 目录布局 |
 | --- | --- | --- |
@@ -197,6 +203,9 @@ Anws 维护一份统一的工作流 / 技能源，然后将其投影到各个 AI
 | **Cursor** | ✅ 支持 | `AGENTS.md` + `.cursor/commands/` + `.cursor/skills/` |
 | **Codex** | ⚠️ Preview | `AGENTS.md` + `.codex/skills/anws-system/` + `.codex/skills/<skill>/` |
 | **OpenCode** | ✅ 支持 | `AGENTS.md` + `.opencode/commands/` + `.opencode/skills/` |
+| **Trae** | ✅ 支持 | `AGENTS.md` + `.trae/skills/anws-system/` + `.trae/skills/<skill>/` |
+| **Qoder** | ✅ 支持 | `AGENTS.md` + `.qoder/commands/` + `.qoder/skills/` |
+| **Kilo Code** | ✅ 支持 | `AGENTS.md` + `.kilocode/workflows/` + `.kilocode/skills/` |
 
 ---
 
@@ -269,6 +278,19 @@ your-project/
 ├── .opencode/
 │   ├── commands/
 │   └── skills/
+├── .qoder/
+│   ├── commands/
+│   └── skills/
+├── .kilocode/
+│   ├── workflows/
+│   └── skills/
+├── .trae/
+│   └── skills/
+│       ├── anws-system/
+│       │   ├── SKILL.md
+│       │   └── references/
+│       └── <skill>/
+│           └── SKILL.md
 └── .codex/
     ├── skills/
     │   ├── anws-system/
